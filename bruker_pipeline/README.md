@@ -49,6 +49,7 @@ Data is now ready for processing
 
 ## Requirements : 
 
+* Make sure rabies-0.4.7.simg is installed
 * Make sure you have a direcory containing your "bids" directory and 3 empty directories : "preprocess", "confound", "analysis"
 * Make sure that the path pointing to RABIES is the right one
 

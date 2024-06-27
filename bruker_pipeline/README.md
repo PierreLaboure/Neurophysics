@@ -1,4 +1,5 @@
-#Bruker Pipeline
+# Bruker Pipeline
+
 ---
 
 ## Purpose : 
@@ -43,6 +44,7 @@ This pipeline will carry out the following actions :
 Data is now ready for processing
 
 # Rabies processing
+
 ---
 
 ## Requirements : 

@@ -4,7 +4,7 @@ In Terminal :
 	pipeline.sh "/media/rgolgolab/WD6/Alicia/Resting-state/Raw_data/Females/Afterttt" "./full_pipeline"
 
 Make sure your output directory contains a file "Scans.xlsx" With only 2 colunms.
-	One of them must contains subject names like : "AN2165".
+	One of them must contain subject names like : "AN2165".
 	The second one containing scan IDs like : "E6" or "E10".
 See file in /media/rgolgolab/WD6/PierrePrePro/full_pipeline for example.
 

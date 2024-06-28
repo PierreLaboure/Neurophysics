@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from mne.viz import circular_layout
+
+import argparse
+
 
 def aggregate_ROI(ROI_path, agg_LR):
     agg = pd.read_excel(ROI_path)
@@ -72,3 +76,25 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
     plt.ion()
 
     np.save(matrix_name, corr_matrix)
+
+
+def str2bool(s):
+    if isinstance(s, bool):
+        return s
+    if s == 'True':
+         return True
+    elif s == 'False':
+         return False
+    else:
+         raise argparse.ArgumentTypeError('Boolean value expected.')
+    
+def node_angle(ROI_names):
+    label_names = ROI_names
+    lh_labels = [name for name in label_names if name.endswith("left")]
+    rh_labels = [name for name in label_names if name.endswith("right")]
+    node_order = lh_labels[::-1] + rh_labels
+    node_angles = circular_layout(
+        label_names, node_order, start_pos=90, group_boundaries=[0, len(label_names) // 2]
+    )
+
+    return node_angles

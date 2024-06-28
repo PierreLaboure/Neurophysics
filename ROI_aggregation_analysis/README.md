@@ -35,6 +35,8 @@ Example of command in a terminal :
 
 __python aggregate_FC.py --ROI_path "ROI_autism.xlsx" --atlas_path "DSURQE_40micron_labels.nii" --confound_path "confound" --output_path "output" --agg_LR False__
 
+agg_LR arguments allows to aggregate left and right ROIs or to analyse them separately
+
 Make sure you point to the adress of a "confound" directory obtained from RABIES
 Make sure you have an atlas in nifti format
 Make sure you have an excel sheet (example __ROI_autism.xlsx__) where : 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#out_data_dir must contain a file called Scans.xlsx
-
 insert_deo() {
 	local input_string="$1"
 	if [[ "$input_string" == *_bold.nii.gz ]]; then
@@ -31,33 +29,9 @@ insert_T2w() {
     	fi
 }
 
-raw_data_dir="$1"
-out_data_dir="$2"
-out_name="Helper"
 
-brkraw bids_helper "$raw_data_dir" "$out_data_dir/$out_name" -j
+bids_dir="$1"
 
-mv -v "$out_data_dir/${out_name::-1}.json" "$out_data_dir/${out_name}.json"
-
-filePath="$out_data_dir/${out_name}.csv"
-
-#process bids_helper
-/usr/bin/awk -F, '(FNR==1||$6=="func"||$6=="anat") {print}' "$filePath" |\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if (NR>1) {$3=""}} { print }'|\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if ($6=="func") {$13="bold"} if ($6=="anat") {$13="T2w"} print }' |\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {gsub(/Underscore/,"",$2)} { print }' > tmp && mv tmp $filePath
-
-#removing useless scans
-source /home/rgolgolab/anaconda3/bin/activate
-python clean_scans.py "$filePath" "$out_data_dir/Scans.xlsx"
-
-#converting to bids
-brkraw bids_convert "$raw_data_dir" "$out_data_dir/$out_name.csv" -j "$out_data_dir/$out_name.json" -o "$out_data_dir/bids"
-
-
-
-
-bids_dir="$out_data_dir/bids"
 
 # Loop through each subject directory
 for subject_dir in "$bids_dir"/sub*/; do
@@ -104,14 +78,3 @@ for subject_dir in "$bids_dir"/sub*/; do
     fi
 
 done
-
-python concat_bold.py "$bids_dir"
-
-mkdir "$out_data_dir/preprocess"
-mkdir "$out_data_dir/confound"
-mkdir "$out_data_dir/analysis"
-
-
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess rabies-0.4.7.simg -p MultiProc preprocess /bids /preprocess --apply_STC --TR 1.5
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound rabies-0.4.7.simg confound_correction /preprocess /confound --highpass 0.01 --smoothing_filter 0.35 --lowpass 0.1 --conf_list WM_signal CSF_signal mot_6
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound -B $out_data_dir/analysis:/analysis rabies-0.4.7.simg analysis /confound /analysis --group_ica apply=true,dim=10,random_seed=1 --FC_matrix

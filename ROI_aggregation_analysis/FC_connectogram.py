@@ -69,3 +69,11 @@ if __name__ == "__main__":
     else:
         fig, ax = plt.subplots(figsize = (10,10), facecolor="black", subplot_kw=dict(polar=True))
         plot_connectivity_circle(mean_FC, ROI_names, ax=ax)
+    
+    figure_dir = os.path.join(output_path, "Connectograms")
+    os.makedirs(figure_dir)
+    if subsetSub:
+        figurename = os.path.join(figure_dir, "Connectogram_"+matrix_list+".png")
+    else:
+        figurename = os.path.join(figure_dir, "Connectogram_all.png")
+    plt.savefig(figurename)

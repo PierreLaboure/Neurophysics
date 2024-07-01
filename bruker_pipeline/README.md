@@ -25,6 +25,8 @@ It requires the following libraries :
 
 In a linux Terminal : 
 	pipeline.sh "input_data_directory" "output directory
+
+Example : 
 	pipeline.sh "/media/rgolgolab/WD6/Alicia/Resting-state/Raw_data/Females/Afterttt" "./full_pipeline"
 
 Make sure your output directory contains a file named __Scans.xlsx__ With only 2 colunms like in the given example.
@@ -39,7 +41,7 @@ This pipeline will carry out the following actions :
 		* add T2w or BOLD tags to scans
 * Convert data to BIDS
 * deoblique all NIFTI images
-* concatenate all bold runs of subjects
+* concatenate all bold runs for each subject
 
 Data is now ready for processing
 

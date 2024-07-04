@@ -23,6 +23,8 @@ It requires the following libraries :
   
 ## Running the pipeline : 
 
+Once downloaded, you must activate the .sh scripts via : chmod +x script.sh
+
 In a linux Terminal : 
 	pipeline.sh "input_data_directory" "output directory
 
@@ -44,6 +46,12 @@ This pipeline will carry out the following actions :
 * concatenate all bold runs for each subject
 
 Data is now ready for processing
+
+## nii2deo.sh : 
+
+You can also run the deoblique code as a standalone if your data is already in BIDS framework via command : nii2deo.sh bids
+
+This function will deoblique all images but won't concatenate bold runs. Doesn't require python.
 
 # Rabies processing
 

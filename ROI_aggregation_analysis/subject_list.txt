@@ -1,2 +1,0 @@
-sub-MicroConnectUnderscoreCU799_deoblique_bold_RAS_combined_cleaned.nii.gz
-sub-MicroConnectUnderscoreCU898_deoblique_bold_RAS_combined_cleaned.nii.gz

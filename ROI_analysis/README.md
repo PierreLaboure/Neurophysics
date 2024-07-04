@@ -70,6 +70,7 @@ __python FC_connectogram.py "output" --matrix_list "matrix_list.txt"__
 
 ## Outputs of the function : 
 Plots a connectogram of the mean of the selected FC matrices
+![Alt text](figures/connectogram.png)
 
 
 # boxplot_Compare.py : 
@@ -92,3 +93,4 @@ __python boxplot_Compare.py 'output_PLX' 'output_WT' 'PLX' 'WT'__
 
 ## Output of the function : 
 Boxplots
+![Alt text](figures/boxplot autism.png)

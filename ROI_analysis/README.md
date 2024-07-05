@@ -93,4 +93,4 @@ __python boxplot_Compare.py 'output_PLX' 'output_WT' 'PLX' 'WT'__
 
 ## Output of the function : 
 Boxplots
-![Alt text](figures/boxplot_autism.png)
+<img src="figures/boxplot_autism.png" alt="boxplot" width="200"/>

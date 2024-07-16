@@ -31,20 +31,52 @@ insert_T2w() {
     	fi
 }
 
-raw_data_dir="$1"
-out_data_dir="$2"
+usage() {
+    echo "Usage: $0 <raw_dir> <out_dir> [-c]"
+    echo "  raw_data_dir     Mandatory argument for raw directory"
+    echo "  out_data_dir     Mandatory argument for output directory"
+    echo "  -c          Optional boolean flag for concatenation"
+    exit 1
+}
+
+concat=false
+
+# Check the number of arguments
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    echo "Error: Invalid number of arguments." >&2
+    usage
+fi
+
+# Check if the last argument is '-c'
+if [ "$#" -eq 3 ]; then
+    if [ "$3" == "-c" ]; then
+        concat=true
+        raw_data_dir="$1"
+        out_data_dir="$2"
+    else
+        echo "Error: Invalid option. The only valid optional argument is '-c' and it must be the last argument." >&2
+        usage
+    fi
+else
+    raw_data_dir="$1"
+    out_data_dir="$2"
+fi
+
 out_name="Helper"
 
 brkraw bids_helper "$raw_data_dir" "$out_data_dir/$out_name" -j
 
-mv -v "$out_data_dir/${out_name::-1}.json" "$out_data_dir/${out_name}.json"
+#mv -v "$out_data_dir/${out_name::-1}.json" "$out_data_dir/${out_name}.json"
 
 filePath="$out_data_dir/${out_name}.csv"
 
+modality_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "modality") print i}')
+type_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "DataType") print i}')
+
 #process bids_helper
-/usr/bin/awk -F, '(FNR==1||$6=="func"||$6=="anat") {print}' "$filePath" |\
+/usr/bin/awk -F, -v type_idx="$type_index" '(FNR==1||$6=="func"||$(type_idx)=="anat") {print}' "$filePath" |\
 /usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if (NR>1) {$3=""}} { print }'|\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if ($6=="func") {$13="bold"} if ($6=="anat") {$13="T2w"} print }' |\
+/usr/bin/awk -F, -v modality_idx="$modality_index" -v type_idx="$type_index" 'BEGIN{FS = OFS = ","} {if ($(type_idx)=="func") {$(modality_idx)="bold"} if ($(type_idx)=="anat") {$(modality_idx)="T2w"} print }' |\
 /usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {gsub(/Underscore/,"",$2)} { print }' > tmp && mv tmp $filePath
 
 #removing useless scans
@@ -53,9 +85,6 @@ python clean_scans.py "$filePath" "$out_data_dir/Scans.xlsx"
 
 #converting to bids
 brkraw bids_convert "$raw_data_dir" "$out_data_dir/$out_name.csv" -j "$out_data_dir/$out_name.json" -o "$out_data_dir/bids"
-
-
-
 
 bids_dir="$out_data_dir/bids"
 
@@ -105,8 +134,9 @@ for subject_dir in "$bids_dir"/sub*/; do
 
 done
 
-python concat_bold.py "$bids_dir"
-
+if $concat; then
+    python concat_bold.py "$bids_dir"
+fi
 mkdir "$out_data_dir/preprocess"
 mkdir "$out_data_dir/confound"
 mkdir "$out_data_dir/analysis"

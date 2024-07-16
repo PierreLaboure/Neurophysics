@@ -21,15 +21,18 @@ It requires the following libraries :
 * nibabel
 
   
-## Running the pipeline : 
+## Running the pipeline.sh : 
 
 Once downloaded, you must activate the .sh scripts via : chmod +x script.sh
 
 In a linux Terminal : 
-	pipeline.sh "input_data_directory" "output directory
+	bash pipeline.sh "input_data_directory" "output directory
+		Or :
+	bash pipeline.sh "input_data_directory" "output directory -c
+		To concatenate bold nifti files
 
 Example : 
-	pipeline.sh "/media/rgolgolab/WD6/Alicia/Resting-state/Raw_data/Females/Afterttt" "./full_pipeline"
+	bash pipeline.sh "/media/rgolgolab/WD6/Alicia/Resting-state/Raw_data/Females/Afterttt" "./full_pipeline" -c
 
 Make sure your output directory contains a file named __Scans.xlsx__ With only 2 colunms like in the given example.
 * One of them must contain subject names like : "AN2165".
@@ -52,6 +55,10 @@ Data is now ready for processing
 You can also run the deoblique code as a standalone if your data is already in BIDS framework via command : nii2deo.sh bids
 
 This function will deoblique all images but won't concatenate bold runs. Doesn't require python.
+
+## raw_process.sh : 
+
+Will Convert your raw bruker data to bids with scan extraction and helper cleaning but won't perform the deoblique step
 
 # Rabies processing
 

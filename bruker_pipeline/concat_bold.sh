@@ -14,5 +14,7 @@ for func_dir in "$bids_dir"/sub*/func/; do
 
     for file in "${file_array[@]}"; do
         rm "$file"
+        
     done
+
 done

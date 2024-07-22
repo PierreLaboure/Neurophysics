@@ -72,11 +72,13 @@ filePath="$out_data_dir/${out_name}.csv"
 
 modality_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "modality") print i}')
 type_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "DataType") print i}')
+task_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "task") print i}')
 
 #process bids_helper
 /usr/bin/awk -F, -v type_idx="$type_index" '(FNR==1||$6=="func"||$(type_idx)=="anat") {print}' "$filePath" |\
 /usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if (NR>1) {$3=""}} { print }'|\
 /usr/bin/awk -F, -v modality_idx="$modality_index" -v type_idx="$type_index" 'BEGIN{FS = OFS = ","} {if ($(type_idx)=="func") {$(modality_idx)="bold"} if ($(type_idx)=="anat") {$(modality_idx)="T2w"} print }' |\
+/usr/bin/awk -F, -v task_idx="$task_index" -v type_idx="$type_index" 'BEGIN{FS = OFS = ","} {if ($(type_idx)=="func") {$(task_idx)="rest"} print }' |\
 /usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {gsub(/Underscore/,"",$2)} { print }' > tmp && mv tmp $filePath
 
 #removing useless scans
@@ -105,9 +107,12 @@ for subject_dir in "$bids_dir"/sub*/; do
         for file in $files; do
             echo "Found file: $file"
             bold_file=$(insert_bold "$file")
-            deo_name=$(insert_deo "$bold_file")
-            3dWarp -oblique2card -prefix "$deo_name" "$file"
-	    rm "$file"
+            # deo_name=$(insert_deo "$bold_file")
+            deo_name="$bold_file"
+            3dTshift -prefix "temp.nii.gz" -tpattern altminus "$file"
+            rm "$file"
+            3dWarp -oblique2card -prefix "$deo_name" "temp.nii.gz"
+        rm "temp.nii.gz"
         done
     else
         echo "Directory $func_dir does not exist"
@@ -123,9 +128,11 @@ for subject_dir in "$bids_dir"/sub*/; do
 	for file in $files; do
 	   echo "found file : $file"
        T2w_file=$(insert_T2w "$file")
-	   deo_name=$(insert_deo "$T2w_file")
-           3dWarp -oblique2card -prefix "$deo_name" "$file"
+	   #deo_name=$(insert_deo "$T2w_file")
+       deo_name="$T2w_file"
+           3dWarp -oblique2card -prefix "temp.nii.gz" "$file"
 	   rm "$file"
+       mv "temp.nii.gz" "$deo_name"
 
 	done
     else
@@ -135,7 +142,7 @@ for subject_dir in "$bids_dir"/sub*/; do
 done
 
 if $concat; then
-    python concat_bold.py "$bids_dir"
+    bash concat_bold.sh "$bids_dir"
 fi
 mkdir "$out_data_dir/preprocess"
 mkdir "$out_data_dir/confound"

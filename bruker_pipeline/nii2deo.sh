@@ -50,9 +50,12 @@ for subject_dir in "$bids_dir"/sub*/; do
         for file in $files; do
             echo "Found file: $file"
             bold_file=$(insert_bold "$file")
-            deo_name=$(insert_deo "$bold_file")
-            3dWarp -oblique2card -prefix "$deo_name" "$file"
-	    rm "$file"
+            #deo_name=$(insert_deo "$bold_file")
+			deo_name="$bold_file"
+			3dTshift -prefix "temp.nii.gz" -tpattern altminus "$file"
+			rm "$file"
+            3dWarp -oblique2card -prefix "$deo_name" "temp.nii.gz"
+		rm "temp.nii.gz"
         done
     else
         echo "Directory $func_dir does not exist"
@@ -68,9 +71,11 @@ for subject_dir in "$bids_dir"/sub*/; do
 	for file in $files; do
 	   echo "found file : $file"
        T2w_file=$(insert_T2w "$file")
-	   deo_name=$(insert_deo "$T2w_file")
-           3dWarp -oblique2card -prefix "$deo_name" "$file"
+	   #deo_name=$(insert_deo "$T2w_file")
+	   deo_name="$T2w_file"
+           3dWarp -oblique2card -prefix "temp.nii.gz" "$file"
 	   rm "$file"
+	   mv "temp.nii.gz" "$deo_name"
 
 	done
     else

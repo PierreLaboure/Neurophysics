@@ -10,7 +10,7 @@ import pickle
 
 from aggregate_utils import aggregate_ROI, ROI_FC, str2bool
 
-if __name__ == "__main__":
+def aggregate_FC():
 
     parser = argparse.ArgumentParser(description='Process some parameters.')
 
@@ -104,4 +104,5 @@ if __name__ == "__main__":
                     ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name)
 
 
-        
+if __name__ == "__main__":
+    aggregate_FC()

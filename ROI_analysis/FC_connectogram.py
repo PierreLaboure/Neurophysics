@@ -10,7 +10,7 @@ import argparse
 
 from aggregate_utils import node_angle
 
-if __name__ == "__main__":
+def FC_connectogram():
     parser = argparse.ArgumentParser(description='Process some parameters.')
 
     parser.add_argument('output_path', type=str,
@@ -76,3 +76,7 @@ if __name__ == "__main__":
     else:
         figurename = os.path.join(figure_dir, "Connectogram_all.png")
     plt.savefig(figurename)
+
+
+if __name__ == "__main__":
+    FC_connectogram()

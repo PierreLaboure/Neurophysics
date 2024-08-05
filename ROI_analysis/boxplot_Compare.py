@@ -11,7 +11,7 @@ import argparse
 from aggregate_utils import FC_df_tri
 
 
-if __name__ == "__main__":
+def boxplot_Compare():
 	parser = argparse.ArgumentParser(description='Process some parameters.')
 
 	parser.add_argument('output_path_1', type=str,
@@ -57,3 +57,6 @@ if __name__ == "__main__":
 
 	sns.boxplot(df, x = 'Connection', y = 'Correlation', hue = "Group")
 	plt.show()
+
+if __name__ == "__main__":
+	boxplot_Compare()

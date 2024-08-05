@@ -47,7 +47,8 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
     confound_data = my_img.get_fdata()
 
     #Undersample the atlas
-    atlas_down = undersample(atlas_data, confound_data.shape[:-1])
+    if confound_data.shape[:3]!=atlas_data.shape:
+        atlas_data = undersample(atlas_data, confound_data.shape[:-1])
     #initializing timeseries array
     ROI_timeseries = np.zeros((len(agg_ROI_labels.keys()), confound_data.shape[3]))
     #initializing label names
@@ -59,7 +60,7 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
 
     for k, key in enumerate(label_names):
         #creating a mask on aggregated ROI
-        mask = np.isin(atlas_down, agg_ROI_labels[key])
+        mask = np.isin(atlas_data, agg_ROI_labels[key])
         bold_mask = np.where(mask.reshape(-1))
         timeseries = confound_data[bold_mask[0], :].mean(axis = 0)
         
@@ -86,7 +87,7 @@ def plot_FC(corr_matrix, label_names):
     tick_labels = label_names
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
-    ax.set_xticklabels(tick_labels, rotation = 45)
+    ax.set_xticklabels(tick_labels, rotation = 70)
     ax.set_yticklabels(tick_labels)
     plt.colorbar()
     plt.tight_layout()

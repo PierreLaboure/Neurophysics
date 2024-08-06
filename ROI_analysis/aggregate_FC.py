@@ -10,7 +10,7 @@ import pickle
 
 from aggregate_utils import aggregate_ROI, ROI_FC, str2bool
 
-def aggregate_FC():
+def main(args=None):
 
     parser = argparse.ArgumentParser(description='Process some parameters.')
 
@@ -28,7 +28,7 @@ def aggregate_FC():
                         help='List of subjects to analyse')
     
     # Parsing arguments
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     ROI_path = args.ROI_path
     atlas_path = args.atlas_path
     confound_path = args.confound_path
@@ -105,4 +105,4 @@ def aggregate_FC():
 
 
 if __name__ == "__main__":
-    aggregate_FC()
+    main()

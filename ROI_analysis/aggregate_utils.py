@@ -112,7 +112,7 @@ def node_angle(ROI_names):
     rh_labels = [name for name in label_names if name.endswith("right")]
     node_order = lh_labels[::-1] + rh_labels
     node_angles = circular_layout(
-        label_names, node_order, start_pos=90, group_boundaries=[0, len(label_names) // 2]
+        label_names, node_order, start_pos=270, group_boundaries=[0, len(label_names) // 2]
     )
 
     return node_angles

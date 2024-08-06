@@ -10,17 +10,18 @@ import argparse
 
 from aggregate_utils import node_angle
 
-def FC_connectogram():
+
+def main(args = None):
     parser = argparse.ArgumentParser(description='Process some parameters.')
 
-    parser.add_argument('output_path', type=str,
+    parser.add_argument('--output_path', type=str, required=True,
                             help='Path to output directory')
     
     parser.add_argument('--matrix_list', type=str,
                             help='list of matrices of subject')
     
     # Parsing arguments
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     output_path = args.output_path
     matrix_list = args.matrix_list
 
@@ -79,4 +80,4 @@ def FC_connectogram():
 
 
 if __name__ == "__main__":
-    FC_connectogram()
+    main()

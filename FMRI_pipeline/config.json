@@ -1,0 +1,60 @@
+{
+    "cohort_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/Gonadano-diff/ibot_fem_apres",
+    "Process_Specific_Subjects" : {
+    	"Process_Specific_Subjects" : 1,
+    	"Subjects_List" : [
+    		"AN2100"
+    	]
+    },
+    "rss_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia//pipeline/RSS_gonadano",
+    "database_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/Database_gonadano",
+    "ants_transforms_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/Transforms_gonadano",
+    "atlas_average_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/DSURQE_40micron_average.nii",
+    "atlas_labels_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/fullAtlas_SN_VTA.nii.gz",
+    "ROI_index_list": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/ROI_Alicia.xlsx",
+    "pretrained_weights_path": "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt",
+    "diffusion_metrics_list": [
+        "dti_fa",
+        "md",
+        "rd"
+    ],
+    "voxel_volume": 6.399999999999998e-05,
+    "RSS_atlas": 0,
+    "Copy_RDI_Anat": {
+        "Copy_RDI": 0,
+        "Copy_anat": 0
+    },
+    "Reorient_anat": {
+        "Reorient": 0,
+        "Invert_dim": 0
+    },
+    "RSS_RDI_anat": 0,
+    "Register_atlas_2_RDI": {
+        "Register": 0,
+        "Quick": 0,
+        "n_process": 24
+    },
+    "Register_atlas_2_anat": {
+        "Register": 0,
+        "Quick": 0,
+        "n_process": 24
+    },
+    "Transform_atlas_2_anat": {
+        "Transform": 0,
+        "verbose": 1
+    },
+    "Transform_atlas_2_RDI": {
+        "Transform": 0,
+        "verbose": 1
+    },
+    "Extract_metrics": {
+    	"Extract" : 0,
+    	"database_prefix": "DB2",
+    	"verbose" : 1
+    },
+    "Merge_db":{
+    	"Merge" : 1,
+    	"database_prefix" : "DB2",
+    	"Merged_prefix" : "Gonadano2"
+    }
+}

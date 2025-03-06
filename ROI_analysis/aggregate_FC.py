@@ -43,7 +43,7 @@ def main(args=None):
         with open(sub_list, "r") as f:
             lines = f.readlines()
             for line in lines:
-                subject_list.append(line.strip())
+                subject_list.append(os.path.basename(line.strip()))
 
     # Loading the Atlas from nifti
     my_img  = nib.load(atlas_path)

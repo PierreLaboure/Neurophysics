@@ -81,13 +81,13 @@ def plot_FC(corr_matrix, label_names):
     #plot correlation matrix without
     fig, ax = plt.subplots(figsize = (15, 15))
 
-    plt.imshow(corr_matrix)
+    plt.imshow(corr_matrix, cmap = 'viridis', vmin = 0, vmax = 1)
 
     ticks = np.arange(0, len(label_names))
     tick_labels = label_names
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
-    ax.set_xticklabels(tick_labels, rotation = 70)
+    ax.set_xticklabels(tick_labels, rotation = 90)
     ax.set_yticklabels(tick_labels)
     plt.colorbar()
     plt.tight_layout()
@@ -112,7 +112,7 @@ def node_angle(ROI_names):
     rh_labels = [name for name in label_names if name.endswith("right")]
     node_order = lh_labels[::-1] + rh_labels
     node_angles = circular_layout(
-        label_names, node_order, start_pos=270, group_boundaries=[0, len(label_names) // 2]
+        label_names, node_order, start_pos=90, group_boundaries=[0, len(label_names) // 2]
     )
 
     return node_angles

@@ -1,0 +1,52 @@
+{
+    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_ctrl/raw",
+  
+    "raw2bids": {
+    	"convert": 0,
+    	"denoise": 0,
+    	"verbose": 1
+    },
+    "nifti2deoblique": {
+    	"deoblique": 0,
+    	"verbose": 1
+    },
+    "concat_bold_runs": 0,
+    "extract_topup": 0,
+    "topup": {
+    	"correct": 0,
+    	"acqparams_path": "acqparams.txt",
+    	"verbose": 1
+    },
+    "backup_sum_anat": {
+    	"do": 0,
+    	"verbose": 1
+    },
+    "crop_anat": {
+    	"crop": 0,
+    	"IS_crop": "[55 -1]",
+    	"verbose": 1
+    },
+    "crop_atlas": {
+    	"crop": 0,
+    	"template2crop_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_average.nii",
+    	"labels2copy_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/fullAtlas_SN_VTA.nii.gz",
+    	"mask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_mask.nii.gz",
+    	"CSFmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_CSF_mask.nii.gz",
+    	"WMmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_WM_mask.nii.gz",
+    	"verbose": 1
+    },
+    "preprocess": 0,
+    "downscale_labels": 0,
+    "confound": 0,
+    "melodic": {
+    	"RSS_common_bold": 0,
+    	"global_melodic": {
+    		"do": 1,
+    		"specify_dimension": 1,
+    		"dimension": 8,
+    		"report": 1,
+    		"verbose": 1
+    	}
+    }
+    
+}

@@ -65,7 +65,7 @@ Additional Libraries :
 ## Running FC_connectogram.py : 
 
 Example of command in terminal:
-__python FC_connectogram.py "output" --matrix_list "matrix_list.txt"__
+__python FC_connectogram.py --output_path "output" --matrix_list "matrix_list.txt"__
 
 
 ## Outputs of the function : 

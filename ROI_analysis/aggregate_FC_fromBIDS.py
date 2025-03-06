@@ -11,7 +11,8 @@ import pickle
 from aggregate_utils import aggregate_ROI, ROI_FC, str2bool
 
 
-def aggregate_FC_fromBIDS():
+def main(args=None):
+
 
     parser = argparse.ArgumentParser(description='Process some parameters.')
 
@@ -27,7 +28,7 @@ def aggregate_FC_fromBIDS():
                         help='List of subjects to analyse')
     
     # Parsing arguments
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     ROI_path = args.ROI_path
     BIDS_path = args.BIDS_path
     output_path = args.output_path
@@ -108,4 +109,5 @@ def aggregate_FC_fromBIDS():
                     ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name)
 
 if __name__ == "__main__":
-    aggregate_FC_fromBIDS()
+    main()
+

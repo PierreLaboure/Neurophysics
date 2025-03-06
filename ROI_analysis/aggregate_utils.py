@@ -81,13 +81,13 @@ def plot_FC(corr_matrix, label_names):
     #plot correlation matrix without
     fig, ax = plt.subplots(figsize = (15, 15))
 
-    plt.imshow(corr_matrix)
+    plt.imshow(corr_matrix, cmap = 'viridis', vmin = 0, vmax = 1)
 
     ticks = np.arange(0, len(label_names))
     tick_labels = label_names
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
-    ax.set_xticklabels(tick_labels, rotation = 70)
+    ax.set_xticklabels(tick_labels, rotation = 90)
     ax.set_yticklabels(tick_labels)
     plt.colorbar()
     plt.tight_layout()

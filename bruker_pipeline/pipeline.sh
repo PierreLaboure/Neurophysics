@@ -2,153 +2,169 @@
 
 #out_data_dir must contain a file called Scans.xlsx
 
-insert_deo() {
-	local input_string="$1"
-	if [[ "$input_string" == *_bold.nii.gz ]]; then
-		echo "${input_string/_bold.nii.gz/_deoblique_bold.nii.gz}"
-	elif [[ "$input_string" == *T2w.nii.gz ]]; then
-		echo "${input_string/_T2w.nii.gz/_deoblique_T2w.nii.gz}"
-	else
-		echo "$input_string"
-	fi
-}
-
-insert_bold() {
-    	local input_string="$1"
-    	if [[ ! "$input_string" =~ _bold\.nii\.gz$ ]]; then
-        	echo "${input_string%.nii.gz}_bold.nii.gz"
-    	else
-        	echo "$input_string"
-    	fi
-}
-
-insert_T2w() {
-    	local input_string="$1"
-    	if [[ ! "$input_string" =~ _T2w\.nii\.gz$ ]]; then
-        	echo "${input_string%.nii.gz}_T2w.nii.gz"
-    	else
-        	echo "$input_string"
-    	fi
-}
-
 usage() {
-    echo "Usage: $0 <raw_dir> <out_dir> [-c]"
-    echo "  raw_data_dir     Mandatory argument for raw directory"
+    echo "Usage: $0 <out_data_dir>"
     echo "  out_data_dir     Mandatory argument for output directory"
-    echo "  -c          Optional boolean flag for concatenation"
+    echo "Options:"
+    echo "  -h, --help      Show this help message and exit"
     exit 1
 }
 
-concat=false
-
-# Check the number of arguments
-if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
-    echo "Error: Invalid number of arguments." >&2
+# Check if at least two arguments are provided
+if [ "$#" -lt 1 ]; then
     usage
 fi
 
-# Check if the last argument is '-c'
-if [ "$#" -eq 3 ]; then
-    if [ "$3" == "-c" ]; then
-        concat=true
-        raw_data_dir="$1"
-        out_data_dir="$2"
-    else
-        echo "Error: Invalid option. The only valid optional argument is '-c' and it must be the last argument." >&2
-        usage
-    fi
-else
-    raw_data_dir="$1"
-    out_data_dir="$2"
-fi
+# Default values
+raw_data_dir=$(jq -r .raw_data_dir config.json)
+
+# Assign required arguments
+out_data_dir="$1"
+shift   # Move past the first argument
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Error: Unknown option '$1'" >&2
+            usage
+            ;;
+    esac
+    shift  # Move to the next argument
+done
 
 out_name="Helper"
 
-brkraw bids_helper "$raw_data_dir" "$out_data_dir/$out_name" -j
+####################################################################################################################################################
+#Convert raw scans to bids format
 
-#mv -v "$out_data_dir/${out_name::-1}.json" "$out_data_dir/${out_name}.json"
-
-filePath="$out_data_dir/${out_name}.csv"
-
-modality_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "modality") print i}')
-type_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "DataType") print i}')
-task_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "task") print i}')
-
-#process bids_helper
-/usr/bin/awk -F, -v type_idx="$type_index" '(FNR==1||$6=="func"||$(type_idx)=="anat") {print}' "$filePath" |\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {if (NR>1) {$3=""}} { print }'|\
-/usr/bin/awk -F, -v modality_idx="$modality_index" -v type_idx="$type_index" 'BEGIN{FS = OFS = ","} {if ($(type_idx)=="func") {$(modality_idx)="bold"} if ($(type_idx)=="anat") {$(modality_idx)="T2w"} print }' |\
-/usr/bin/awk -F, -v task_idx="$task_index" -v type_idx="$type_index" 'BEGIN{FS = OFS = ","} {if ($(type_idx)=="func") {$(task_idx)="rest"} print }' |\
-/usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {gsub(/Underscore/,"",$2)} { print }' > tmp && mv tmp $filePath
-
-#removing useless scans
-source /home/rgolgolab/anaconda3/bin/activate
-python clean_scans.py "$filePath" "$out_data_dir/Scans.xlsx"
-
-#converting to bids
-brkraw bids_convert "$raw_data_dir" "$out_data_dir/$out_name.csv" -j "$out_data_dir/$out_name.json" -o "$out_data_dir/bids"
+if [[ $(jq -r .raw2bids.convert config.json) == 1 ]]; then
+    echo "Converting raw data from $raw_data_dir to bids format, verbose $(jq -r .raw2bids.verbose config.json)"
+    bash raw_process.sh "$raw_data_dir" "$out_data_dir" -d $(jq -r .raw2bids.denoise config.json) -v $(jq -r .raw2bids.verbose config.json)
+fi
 
 bids_dir="$out_data_dir/bids"
 
-# Loop through each subject directory
-for subject_dir in "$bids_dir"/sub*/; do
-    # Inside each subject directory
-    echo "Processing $subject_dir"
 
-    # Define the path to the func directory
-    func_dir="${subject_dir}func/"
+####################################################################################################################################################
+#Deoblique Bold scans
 
-    # Check if the func directory exists
-    if [ -d "$func_dir" ]; then
-        # Find the .nii.gz files in the func directory ending with _EPI, _bold, or _T2w
-        files=$(find "$func_dir" -type f \( -name "*.nii.gz"  \))
+if [[ $(jq -r .nifti2deoblique.deoblique config.json) == 1 ]]; then
+    echo "Applying deoblique to $bids_dir"
+    bash nii2deo.sh "$bids_dir" --verbose $(jq -r .nifti2deoblique.verbose config.json)
+fi
 
-        # Process each found file
-        for file in $files; do
-            echo "Found file: $file"
-            bold_file=$(insert_bold "$file")
-            # deo_name=$(insert_deo "$bold_file")
-            deo_name="$bold_file"
-            3dTshift -prefix "$func_dir/temp.nii.gz" -tpattern altminus "$file"
-            rm "$file"
-            3dWarp -oblique2card -prefix "$deo_name" "$func_dir/temp.nii.gz"
-        rm "$func_dir/temp.nii.gz"
-        done
-    else
-        echo "Directory $func_dir does not exist"
-    fi
+####################################################################################################################################################
+#Concatenating Bold Runs
 
-    anat_dir="${subject_dir}anat/"
-
-    #check if anat directory exists
-    if [ -d "$anat_dir" ]; then
-	files=$(find "$anat_dir" -type f \( -name "*.nii.gz"  \))
-
-	#¶rocess files found
-	for file in $files; do
-	   echo "found file : $file"
-       T2w_file=$(insert_T2w "$file")
-	   #deo_name=$(insert_deo "$T2w_file")
-       deo_name="$T2w_file"
-           3dWarp -oblique2card -prefix "$anat_dir/temp.nii.gz" "$file"
-	   rm "$file"
-       mv "$anat_dir/temp.nii.gz" "$deo_name"
-
-	done
-    else
-	echo "Directory $anat_dir does not exist"
-    fi
-
-done
-
-if $concat; then
+if [[ $(jq -r .concat_bold_runs config.json) == 1 ]]; then
+    echo "Concatenating bold runs"
     bash concat_bold.sh "$bids_dir"
 fi
-mkdir "$out_data_dir/preprocess"
-mkdir "$out_data_dir/confound"
-mkdir "$out_data_dir/analysis"
+
+####################################################################################################################################################
+#Identifying scans for topup correction
+
+if [[ $(jq -r .extract_topup config.json) == 1 ]]; then
+    echo "Identifying topup scans in $out_data_dir"
+    bash extract_topup.sh "$raw_data_dir" "$out_data_dir"
+else
+    #rm topup
+    z=1
+fi
+
+####################################################################################################################################################
+#Applying topup correction
+
+if [[ $(jq -r .topup.correct config.json) == 1 ]]; then
+    #Need to check if topup extraction has been done
+    bash topup_functional.sh "$bids_dir" "$(jq -r .topup.acqparams_path config.json)" --verbose $(jq -r .topup.verbose config.json)
+fi
+
+####################################################################################################################################################
+#Making backup and summing T2maps
+
+if [[ $(jq -r .backup_sum_anat.do config.json) == 1 ]]; then
+    bash backup_sum_anat.sh "$out_data_dir" --verbose $(jq -r .backup_sum_anat.verbose config.json)
+fi
+
+####################################################################################################################################################
+#Croping anatomical scans
+
+if [[ $(jq -r .crop_anat.crop config.json) == 1 ]]; then
+    bash crop_anat.sh "$bids_dir" --verbose $(jq -r .crop_anat.verbose config.json)
+fi
+
+####################################################################################################################################################
+#Croping Atlas components
+
+if [[ $(jq -r .crop_atlas.crop config.json) == 1 ]]; then
+    mkdir -p "$out_data_dir/croped_template"
+    bash crop_atlas.sh "$out_data_dir" --verbose $(jq -r .crop_atlas.verbose config.json)
+fi
+
+####################################################################################################################################################
+#Running Preprocessing
+
+if [[ $(jq -r .preprocess config.json) == 1 ]]; then
+    mkdir "$out_data_dir/preprocess"
+    if [ -d "$out_data_dir/croped_template" ]; then 
+        echo "Preprocessing using croped templates from $out_data_dir/croped_template"
+        singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess \
+            -B "$out_data_dir/croped_template:/croped_template" /volatile/home/pl279327/rabies.sif \
+            -p MultiProc --local_threads 22 preprocess /bids /preprocess --TR 1.5 \
+            --labels /croped_template/croped_labels.nii.gz --commonspace_reg template_registration=Affine \
+            --bold2anat_coreg registration=Affine --anat_template /croped_template/croped_template.nii \
+            --brain_mask /croped_template/croped_mask.nii.gz --WM_mask /croped_template/croped_WMmask.nii.gz \
+            --CSF_mask /croped_template/croped_CSFmask.nii.gz
+    else
+        echo "Preprocessing using default templates"
+        singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess /volatile/home/pl279327/rabies.sif \
+        -p MultiProc --local_threads 22 preprocess /bids /preprocess --TR 1.5 \
+            --labels $(jq -r .crop_atlas.labels2copy_path config.json) --commonspace_reg template_registration=Affine \
+            --bold2anat_coreg registration=Affine
+    fi
+fi
+
+####################################################################################################################################################
+#Running Confound Correction
+
+if [[ $(jq -r .confound config.json) == 1 ]]; then
+    #changed FD censoring from 0.05 to 0.02 ???
+    # --match_number_timepoints True ???
+    mkdir "$out_data_dir/confound"
+    singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound \
+        -B "$out_data_dir/croped_template:/croped_template" /volatile/home/pl279327/rabies.sif confound_correction /preprocess /confound \
+        --highpass 0.01 --smoothing_filter 0.3 --lowpass 0.1 --conf_list CSF_signal mot_6 global_signal --edge_cutoff 30 \
+        --frame_censoring FD_censoring=true,FD_threshold=0.05,DVARS_censoring=false,minimum_timepoint=3
+fi
+
+####################################################################################################################################################
+#Running Codes for melodic
+
+if [[ $(jq -r .melodic.RSS_common_bold config.json) == 1 ]]; then
+    bash melodic_common_bold.sh $out_data_dir
+fi
+
+if [[ $(jq -r .melodic.global_melodic.do config.json) == 1 ]]; then
+
+    cmd="bash melodic_pipeline.sh $out_data_dir"
+    if [[ $(jq -r .melodic.global_melodic.specify_dimension config.json) == 1 ]]; then
+        cmd+=" -d $(jq -r .melodic.global_melodic.dimension config.json)"
+    fi
+
+    if [[ $(jq -r .melodic.global_melodic.report config.json) == 1 ]]; then
+        cmd+=" -r"
+    fi
+
+     if [[ $(jq -r .melodic.global_melodic.verbose config.json) == 1 ]]; then
+        cmd+=" -v"
+    fi
+
+    echo -e "\n Running $cmd\n"
+    eval "$cmd"
+fi
 
 
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess rabies-0.4.7.simg -p MultiProc preprocess /bids /preprocess --apply_STC --TR 1.5
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound rabies-0.4.7.simg confound_correction /preprocess /confound --highpass 0.01 --smoothing_filter 0.35 --lowpass 0.1 --conf_list WM_signal CSF_signal mot_6
-#singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound -B $out_data_dir/analysis:/analysis rabies-0.4.7.simg analysis /confound /analysis --group_ica apply=true,dim=10,random_seed=1 --FC_matrix

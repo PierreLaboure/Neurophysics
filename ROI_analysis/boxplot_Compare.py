@@ -11,22 +11,22 @@ import argparse
 from aggregate_utils import FC_df_tri
 
 
-def boxplot_Compare():
+def main(args=None):
 	parser = argparse.ArgumentParser(description='Process some parameters.')
 
-	parser.add_argument('output_path_1', type=str,
+	parser.add_argument('--output_path_1', type=str, required=True,
 						help='Path to output directory of group 1')
-	parser.add_argument('output_path_2', type=str,
+	parser.add_argument('--output_path_2', type=str, required=True,
 						help='Path to output directory of group 2')
 
-	parser.add_argument('group_name_1', type=str,
+	parser.add_argument('--group_name_1', type=str, required=True,
 						help='name of group 1')
-	parser.add_argument('group_name_2', type=str,
+	parser.add_argument('--group_name_2', type=str, required=True,
 						help='name of group 2')
 
 
 	# Parsing arguments
-	args = parser.parse_args()
+	args = parser.parse_args(args)
 	output_path_1 = args.output_path_1
 	output_path_2 = args.output_path_2
 	group_name_1 = args.group_name_1
@@ -59,4 +59,4 @@ def boxplot_Compare():
 	plt.show()
 
 if __name__ == "__main__":
-	boxplot_Compare()
+	main()

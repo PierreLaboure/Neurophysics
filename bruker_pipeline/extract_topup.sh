@@ -57,7 +57,8 @@ find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir;
         nifti_file="${json_file%%.json}.nii.gz"
         #find out if scan is data or made for topup correction
         acq_duration=$(jq -r .AcquisitionDuration "$json_file")
-        if [ "$acq_duration" == "600.0" ]; then
+
+        if (( $(echo "$acq_duration > 200.0" | bc -l) )); then
             is_topup=0
         else
             scan_number=$(jq -r .PulseSequenceDetails "$json_file")

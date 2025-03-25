@@ -20,10 +20,18 @@ def aggregate_ROI(ROI_path, agg_LR):
             agg_ROI[agg_label] = agg_list
     else:
         for agg_label in agg["hierarchy"].unique():
-            agg_list = agg[agg["hierarchy"]==agg_label]["right label"].values.ravel()
-            agg_ROI[agg_label+" right"] = agg_list
-            agg_list = agg[agg["hierarchy"]==agg_label]["left label"].values.ravel()
-            agg_ROI[agg_label+" left"] = agg_list
+            agg_list_right = agg[agg["hierarchy"]==agg_label]["right label"].values.ravel()
+            agg_list_left = agg[agg["hierarchy"]==agg_label]["left label"].values.ravel()
+
+            common = list(set(agg_list_right).intersection(agg_list_left))
+            agg_list_right = [i for i in agg_list_right if i not in common]
+            agg_list_left = [i for i in agg_list_left if i not in common]
+
+            if len(agg_list_right) != 0:
+                agg_ROI[agg_label+" right"] = agg_list_right
+                agg_ROI[agg_label+" left"] = agg_list_left
+            if len(common) != 0:
+                agg_ROI[agg_label+" middle"] = common
 
     return agg_ROI
 
@@ -41,11 +49,13 @@ def undersample(atlas, target_shape):
 
 
 
-def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name):
+def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name, common_mask=None):
     #loading confound tensor
     my_img  = nib.load(confound_image_path)
     confound_data = my_img.get_fdata()
-
+    if (common_mask is not None):
+        confound_data = np.where(common_mask[..., np.newaxis], confound_data, 0)
+    
     #Undersample the atlas
     if confound_data.shape[:3]!=atlas_data.shape:
         atlas_data = undersample(atlas_data, confound_data.shape[:-1])
@@ -68,6 +78,8 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
 
     #correlation matrix computation
     corr_matrix = np.corrcoef(ROI_timeseries)
+    diag_idx = np.diag_indices(corr_matrix.shape[0])
+    corr_matrix[diag_idx] = 0
     #save figure without displaying it
     plt.ioff()
     plot_FC(corr_matrix, label_names)
@@ -108,11 +120,21 @@ def str2bool(s):
 def node_angle(ROI_names):
     #node angles calculator for connectograms
     label_names = ROI_names
+    mh_labels = [name for name in label_names if name.endswith("middle")]
     lh_labels = [name for name in label_names if name.endswith("left")]
     rh_labels = [name for name in label_names if name.endswith("right")]
-    node_order = lh_labels[::-1] + rh_labels
+    node_order = mh_labels + lh_labels[::-1] + rh_labels
+
+    if len(mh_labels)!=0:
+        space = 3
+        offset = 360/(len(label_names)+space/2)
+        corr = offset*5/4
+    else:
+        corr = 0
+    
+
     node_angles = circular_layout(
-        label_names, node_order, start_pos=90, group_boundaries=[0, len(label_names) // 2]
+        label_names, node_order, start_pos=90-corr, group_boundaries=[0, len(mh_labels), len(lh_labels) + len(mh_labels)]
     )
 
     return node_angles

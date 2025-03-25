@@ -26,6 +26,8 @@ def main(args=None):
                         help='True if you want to aggregate Right and Left Hemispheres')
     parser.add_argument('--sub_list', type=str,
                         help='List of subjects to analyse')
+    parser.add_argument('--common_mask', type=str,
+                        help='Path to melodic mask to prevent using ROIs outside of bold scans')
     
     # Parsing arguments
     args = parser.parse_args(args)
@@ -35,6 +37,13 @@ def main(args=None):
     output_path = args.output_path
     agg_LR = args.agg_LR
     sub_list = args.sub_list
+    common_mask_path = args.common_mask
+
+    if (common_mask_path is not None):
+        nii_common_mask = nib.load(common_mask_path)
+        common_mask = nii_common_mask.get_fdata()
+    else:
+        common_mask_path = None
 
     # Checking if a subset of Subject has been parsed
     subsetSub = (sub_list is not None)
@@ -43,7 +52,7 @@ def main(args=None):
         with open(sub_list, "r") as f:
             lines = f.readlines()
             for line in lines:
-                subject_list.append(os.path.basename(line.strip()))
+                subject_list.append(line.strip())
 
     # Loading the Atlas from nifti
     my_img  = nib.load(atlas_path)
@@ -71,38 +80,43 @@ def main(args=None):
     parameters["atlas_path"] = atlas_path
     if subsetSub:
         parameters["subject_list"] = subject_list
+        for confound_file in subject_list:
+            print('processing ' + confound_file)
+            image_name = os.path.basename(confound_file).split('.nii.gz')[0] + '_bold'
+            matrix_name = os.path.join(FC_data_dir, image_name) + "_FC_matrix_data.npy"
+            fig_name = os.path.join(FC_figures_dir, image_name) + "_FC_matrix_fig.png"
+            ROI_FC(agg_ROI_labels, atlas_data, confound_file, fig_name, matrix_name, common_mask)
+
+
+    else:
+        ## looping through confound files
+        # Base directory
+        base_dir = os.path.join(confound_path, 'confound_correction_datasink/cleaned_timeseries')
+
+        # Traverse the directory structure
+        for root, dirs, files in os.walk(base_dir):
+            for dir_name in dirs:
+                # Check if the directory name matches the pattern "_split_name_image_name"
+                if dir_name.startswith('_split_name_'):
+                    # Extract the "image_name" part from the directory name
+                    image_name = dir_name[len('_split_name_'):]
+                    # Construct the full path to the directory
+                    dir_path = os.path.join(root, dir_name)
+                    # Get the list of files in the directory
+                    file_list = glob.glob(os.path.join(dir_path, '*'))
+
+                    # Assuming each directory contains exactly one file
+                    if len(file_list) == 1:
+                        print('processing ' + dir_name)
+                        matrix_name = os.path.join(FC_data_dir, image_name) + "_FC_matrix_data.npy"
+                        fig_name = os.path.join(FC_figures_dir, image_name) + "_FC_matrix_fig.png"
+                        confound_image_path = file_list[0]
+                        
+                        ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name)
+
 
     with open(parameter_file, "wb") as fp:   #Pickling
         pickle.dump(parameters, fp)
-
-    ## looping through confound files
-    # Base directory
-    base_dir = os.path.join(confound_path, 'confound_correction_datasink/cleaned_timeseries')
-
-    # Traverse the directory structure
-    for root, dirs, files in os.walk(base_dir):
-        for dir_name in dirs:
-            # Check if the directory name matches the pattern "_split_name_image_name"
-            if dir_name.startswith('_split_name_'):
-                # Extract the "image_name" part from the directory name
-                image_name = dir_name[len('_split_name_'):]
-                # Construct the full path to the directory
-                dir_path = os.path.join(root, dir_name)
-                # Get the list of files in the directory
-                file_list = glob.glob(os.path.join(dir_path, '*'))
-                if subsetSub:
-                    subject_name = os.path.basename(file_list[0])
-                    if subject_name not in subject_list:
-                        continue
-                # Assuming each directory contains exactly one file
-                if len(file_list) == 1:
-                    print('processing ' + dir_name)
-                    matrix_name = os.path.join(FC_data_dir, image_name) + "_FC_matrix_data.npy"
-                    fig_name = os.path.join(FC_figures_dir, image_name) + "_FC_matrix_fig.png"
-                    confound_image_path = file_list[0]
-                    
-                    ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_name)
-
 
 if __name__ == "__main__":
     main()

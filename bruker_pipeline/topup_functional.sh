@@ -88,6 +88,10 @@ find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir;
     mkdir "$temp_sub_dir"
     find "$func_dir" -maxdepth 1 -type f -exec cp {} "$temp_sub_dir" \;
 
+    bold_data_file=$(find "$func_dir" -type f -name "*_bold.nii.gz" | head -n 1)
+    dim4=$(fslval "$bold_data_file" dim4)
+    dim4_minus1=$((dim4 - 1))
+
     #Fsl operations
     fslmaths "$temp_sub_dir/forwardPE.nii.gz" -Tmean "$temp_sub_dir/meanFor.nii.gz"
     fslmaths "$temp_sub_dir/reversePE.nii.gz" -Tmean "$temp_sub_dir/meanRev.nii.gz"
@@ -103,7 +107,7 @@ find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir;
 
     python "$swell_script" -i "$temp_sub_dir/reversePE.nii.gz" -s 10
     fslroi "$temp_sub_dir/reversePE_SwellT.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" 0 1
-    fslmerge -t "$temp_sub_dir/reverse2apply.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" $(for i in {1..399}; do echo "$temp_sub_dir/reversePE_SwellT0.nii.gz"; done)
+    fslmerge -t "$temp_sub_dir/reverse2apply.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" $(for i in $(seq 1 $dim4_minus1); do echo "$temp_sub_dir/reversePE_SwellT0.nii.gz"; done)
 
 
     find "$temp_sub_dir" -type f -name '*bold.nii.gz' | while read bold_file; do

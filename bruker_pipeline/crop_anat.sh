@@ -75,7 +75,7 @@ crop_script="$(pwd)/crop_img2rigidReg.py"
 
 TEMP_FOLDER=$(mktemp -d)
 
-
+IS_crop=$(jq -r .crop_anat.IS_crop config.json)
 
 find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir; do
     sub_func_dir="$dir/func"
@@ -83,7 +83,7 @@ find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir;
 
     func_img=$(find "$sub_func_dir" -type f -name '*.nii.gz' | sort | tail -n 1)
     anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
-    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 55 -1
+    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 $IS_crop -1
     antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$func_img" -o "$TEMP_FOLDER/R" -n 20 -t 'r' > "$LOG_OUTPUT"
 
     python "$crop_script" -i "$anat_img" -r "$TEMP_FOLDER/RWarped.nii.gz" > "$LOG_OUTPUT"
@@ -92,4 +92,4 @@ find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir;
 
 done
 
-#rm -rf "$TEMP_FOLDER"
+rm -rf "$TEMP_FOLDER"

@@ -1,5 +1,5 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_ctrl/raw",
+    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_afterpump_TR1/raw",
   
     "raw2bids": {
     	"convert": 0,
@@ -23,30 +23,47 @@
     },
     "crop_anat": {
     	"crop": 0,
-    	"IS_crop": "[55 -1]",
+    	"IS_crop": 52,
     	"verbose": 1
     },
     "crop_atlas": {
     	"crop": 0,
-    	"template2crop_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_average.nii",
+    	"template2crop_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_average.nii.gz",
     	"labels2copy_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/fullAtlas_SN_VTA.nii.gz",
     	"mask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_mask.nii.gz",
     	"CSFmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_CSF_mask.nii.gz",
     	"WMmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_WM_mask.nii.gz",
     	"verbose": 1
     },
-    "preprocess": 0,
-    "downscale_labels": 0,
-    "confound": 0,
+    "preprocess": {
+    	"do": 1,
+    	"threads" : 18,
+    	"TR": 1,
+    	"bold2anat_coreg" : "Affine",
+    	"commonspace_reg" : "Affine"
+    },
+    "downscale_labels": {
+    	"do": 0,
+    	"verbose": 1
+    },
+    "confound": {
+    	"do": 0,
+    	"highpass": 0.01,
+    	"lowpass": 0.1,
+    	"smoothing_filter": 0.3,
+    	"conf_list": "CSF_signal mot_6",
+    	"edge_cutoff" : 30
+    },
+    "RSS_common_bold": {
+    	"do": 0,
+    	"verbose": 1,
+    },
     "melodic": {
-    	"RSS_common_bold": 0,
-    	"global_melodic": {
-    		"do": 1,
-    		"specify_dimension": 1,
-    		"dimension": 8,
-    		"report": 1,
-    		"verbose": 1
-    	}
+	"do": 0,
+	"specify_dimension": 1,
+	"dimension": 10,
+	"report": 1,
+	"verbose": 1
     }
     
 }

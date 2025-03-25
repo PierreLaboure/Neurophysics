@@ -2,9 +2,9 @@
 
 #==============================================================================
 #==============================================================================
-# Created on 03/03/2025 by Pierre Labouré
+# Created on 21/03/2025 by Pierre Labouré
 
-# Properly downscale the "croped_labels.nii.gz" map into RABIES commonspace dimensions
+# Properly downscale the "croped_mask.nii.gz" map into RABIES commonspace dimensions
 # This function uses the croped mask from "croped_template"
 #==============================================================================
 #==============================================================================
@@ -70,15 +70,12 @@ TEMP_dir=$(mktemp -d)
 croped_template_dir="$process_dir/croped_template"
 croped_mask="$croped_template_dir/croped_mask.nii.gz"
 
-downscaled_labels="$croped_template_dir/downscaled_labels.nii.gz"
+downscaled_mask="$croped_template_dir/downscaled_mask.nii.gz"
 commonspace_mask=$(find "$process_dir/preprocess/bold_datasink/commonspace_mask" -maxdepth 3 -type f -name '*.nii.gz' -print -quit)
 echo "$commonspace_mask"
 
 antsRegistrationSyN.sh -d 3 -f "$commonspace_mask" -m "$croped_mask" -o "$TEMP_dir/downscale" -n 20 -t 'a'
-antsApplyTransforms -d 3 -i "$croped_template_dir/croped_labels.nii.gz" -r "$commonspace_mask" -o "$TEMP_dir/downscaled.nii.gz" \
-    -t "$TEMP_dir/downscale0GenericAffine.mat" -n 'NearestNeighbor'
-
-fslmaths "$TEMP_dir/downscaled.nii.gz" -add 0.2 "$downscaled_labels" -odt 'int'
+fslmaths "$TEMP_dir/downscaleWarped.nii.gz" "$downscaled_mask" -odt 'int'
 
 rm -rf "$TEMP_FOLDER"
 

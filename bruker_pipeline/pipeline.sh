@@ -80,7 +80,7 @@ fi
 
 if [[ $(jq -r .topup.correct config.json) == 1 ]]; then
     #Need to check if topup extraction has been done
-    bash topup_functional.sh "$bids_dir" "$(jq -r .topup.acqparams_path config.json)" --verbose $(jq -r .topup.verbose config.json)
+    bash topup_functional.sh "$bids_dir" "$(jq -r .topup.acqparams_path config.json)" "$(jq -r .topup.swell_factor config.json)" --verbose $(jq -r .topup.verbose config.json)
 fi
 
 ####################################################################################################################################################
@@ -117,8 +117,9 @@ if [[ $(jq -r .preprocess.do config.json) == 1 ]]; then
             -p MultiProc --local_threads $(jq -r .preprocess.threads config.json) \
             preprocess /bids /preprocess --TR $(jq -r .preprocess.TR config.json) \
             --labels /croped_template/croped_labels.nii.gz \
-            --commonspace_reg template_registration=(jq -r .preprocess.commonspace_coreg config.json) \
+            --commonspace_reg template_registration=$(jq -r .preprocess.commonspace_reg config.json) \
             --bold2anat_coreg registration=$(jq -r .preprocess.bold2anat_coreg config.json) \
+            --anat_inho_cor method=$(jq -r .preprocess.anat_inho_cor config.json) \
             --anat_template /croped_template/croped_template.nii.gz \
             --brain_mask /croped_template/croped_mask.nii.gz --WM_mask /croped_template/croped_WMmask.nii.gz \
             --CSF_mask /croped_template/croped_CSFmask.nii.gz

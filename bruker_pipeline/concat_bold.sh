@@ -1,9 +1,7 @@
 #!/bin/bash
 
-bids_dir="$1"
-
-for func_dir in "$bids_dir"/sub*/func/; do
-
+concater() {
+    func_dir="$1"
     files=$(find "$func_dir" -type f -name "*.nii.gz")
     IFS=$'\n' read -r -d '' -a file_array <<< "$files"
 
@@ -17,4 +15,37 @@ for func_dir in "$bids_dir"/sub*/func/; do
         
     done
 
+}
+
+
+bids_dir="$1"
+
+find "$bids_dir" -type d -name 'sub-*' | while read dir; do
+    has_ses_dirs=false
+    # Look for ses-* subdirectories inside sub-*
+    for ses_dir in "$dir"/ses-*; do
+        if [ -d "$ses_dir" ]; then
+            has_ses_dirs=true
+            # Check if this ses-* dir contains both anat and func
+            if [ -d "$ses_dir/anat" ] && [ -d "$ses_dir/func" ]; then
+                # Output relative path from bids_dir
+                ## sub_dirname="${ses_dir#$bids_dir/}"
+                echo "Concatenating bold runs in $ses_dir/func"
+                func_dir="$ses_dir/func"
+                concater "$func_dir"
+            fi
+        fi
+    done
+
+    # If no ses-* subdirs, check sub-* dir directly
+    if [ "$has_ses_dirs" = false ]; then
+        if [ -d "$dir/anat" ] && [ -d "$dir/func" ]; then
+            ## sub_dirname="${dir#$bids_dir/}"
+            echo "Concatenating bold runs in $dir/func"
+            func_dir="$dir/func"
+            concater "$func_dir"
+        fi
+    fi
 done
+
+

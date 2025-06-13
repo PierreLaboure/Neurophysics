@@ -101,6 +101,10 @@ find "$TEMP_FOLDER/masks" -type f -name "*.nii.gz" | while read image; do
     fi
 done
 
+#Multiply by commonspace mask
+commonspace_mask=$(find $input_data_dir/preprocess/bold_datasink/commonspace_mask -type f | head -n 1)
+fslmaths "$temp_file" -mul "$commonspace_mask" "$temp_file"
+
 mkdir -p "$input_data_dir/masks"
 cp "$temp_file" "$input_data_dir/masks/melodic_mask.nii.gz"
 

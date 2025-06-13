@@ -1,5 +1,5 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_afterpump_TR1/raw",
+    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_ctrl/raw",
   
     "raw2bids": {
     	"convert": 0,
@@ -13,8 +13,9 @@
     "concat_bold_runs": 0,
     "extract_topup": 0,
     "topup": {
-    	"correct": 0,
+    	"correct": 1,
     	"acqparams_path": "acqparams.txt",
+    	"swell_factor" : 10,
     	"verbose": 1
     },
     "backup_sum_anat": {
@@ -23,7 +24,7 @@
     },
     "crop_anat": {
     	"crop": 0,
-    	"IS_crop": 52,
+    	"IS_crop": 0,
     	"verbose": 1
     },
     "crop_atlas": {
@@ -36,11 +37,12 @@
     	"verbose": 1
     },
     "preprocess": {
-    	"do": 1,
+    	"do": 0,
     	"threads" : 18,
     	"TR": 1,
-    	"bold2anat_coreg" : "Affine",
-    	"commonspace_reg" : "Affine"
+    	"bold2anat_coreg" : "SyN",
+    	"commonspace_reg" : "SyN",
+    	"anat_inho_cor": "Rigid"
     },
     "downscale_labels": {
     	"do": 0,
@@ -56,12 +58,12 @@
     },
     "RSS_common_bold": {
     	"do": 0,
-    	"verbose": 1,
+    	"verbose": 1
     },
     "melodic": {
 	"do": 0,
 	"specify_dimension": 1,
-	"dimension": 10,
+	"dimension": 25,
 	"report": 1,
 	"verbose": 1
     }

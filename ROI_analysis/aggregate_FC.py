@@ -43,7 +43,7 @@ def main(args=None):
         nii_common_mask = nib.load(common_mask_path)
         common_mask = nii_common_mask.get_fdata()
     else:
-        common_mask_path = None
+        common_mask = None
 
     # Checking if a subset of Subject has been parsed
     subsetSub = (sub_list is not None)

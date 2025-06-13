@@ -53,12 +53,14 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
     #loading confound tensor
     my_img  = nib.load(confound_image_path)
     confound_data = my_img.get_fdata()
-    if (common_mask is not None):
-        confound_data = np.where(common_mask[..., np.newaxis], confound_data, 0)
     
     #Undersample the atlas
     if confound_data.shape[:3]!=atlas_data.shape:
         atlas_data = undersample(atlas_data, confound_data.shape[:-1])
+    #Crop atlas based on the commmon mask    
+    if (common_mask is not None):
+        confound_data = np.where(common_mask[..., np.newaxis], confound_data, np.nan) #Change done to completely remove data out of mask
+    
     #initializing timeseries array
     ROI_timeseries = np.zeros((len(agg_ROI_labels.keys()), confound_data.shape[3]))
     #initializing label names
@@ -72,7 +74,7 @@ def ROI_FC(agg_ROI_labels, atlas_data, confound_image_path, fig_name, matrix_nam
         #creating a mask on aggregated ROI
         mask = np.isin(atlas_data, agg_ROI_labels[key])
         bold_mask = np.where(mask.reshape(-1))
-        timeseries = confound_data[bold_mask[0], :].mean(axis = 0)
+        timeseries = np.nanmean(confound_data[bold_mask[0], :], axis = 0) # New line with Nanmean
         
         ROI_timeseries[k, :] = timeseries
 

@@ -80,7 +80,7 @@ fi
 
 if [[ $(jq -r .topup.correct config.json) == 1 ]]; then
     #Need to check if topup extraction has been done
-    bash topup_functional.sh "$bids_dir" "$(jq -r .topup.acqparams_path config.json)" --verbose $(jq -r .topup.verbose config.json)
+    bash topup_functional.sh "$bids_dir" "$(jq -r .topup.acqparams_path config.json)" "$(jq -r .topup.swell_factor config.json)" --verbose $(jq -r .topup.verbose config.json)
 fi
 
 ####################################################################################################################################################
@@ -108,58 +108,79 @@ fi
 ####################################################################################################################################################
 #Running Preprocessing
 
-if [[ $(jq -r .preprocess config.json) == 1 ]]; then
+if [[ $(jq -r .preprocess.do config.json) == 1 ]]; then
     mkdir "$out_data_dir/preprocess"
     if [ -d "$out_data_dir/croped_template" ]; then 
         echo "Preprocessing using croped templates from $out_data_dir/croped_template"
         singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess \
             -B "$out_data_dir/croped_template:/croped_template" /volatile/home/pl279327/rabies.sif \
-            -p MultiProc --local_threads 22 preprocess /bids /preprocess --TR 1.5 \
-            --labels /croped_template/croped_labels.nii.gz --commonspace_reg template_registration=Affine \
-            --bold2anat_coreg registration=Affine --anat_template /croped_template/croped_template.nii \
+            -p MultiProc --local_threads $(jq -r .preprocess.threads config.json) \
+            preprocess /bids /preprocess --TR $(jq -r .preprocess.TR config.json) \
+            --labels /croped_template/croped_labels.nii.gz \
+            --commonspace_reg template_registration=$(jq -r .preprocess.commonspace_reg config.json) \
+            --bold2anat_coreg registration=$(jq -r .preprocess.bold2anat_coreg config.json) \
+            --anat_inho_cor method=$(jq -r .preprocess.anat_inho_cor config.json) \
+            --anat_template /croped_template/croped_template.nii.gz \
             --brain_mask /croped_template/croped_mask.nii.gz --WM_mask /croped_template/croped_WMmask.nii.gz \
             --CSF_mask /croped_template/croped_CSFmask.nii.gz
     else
         echo "Preprocessing using default templates"
         singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess /volatile/home/pl279327/rabies.sif \
-        -p MultiProc --local_threads 22 preprocess /bids /preprocess --TR 1.5 \
-            --labels $(jq -r .crop_atlas.labels2copy_path config.json) --commonspace_reg template_registration=Affine \
-            --bold2anat_coreg registration=Affine
+            -p MultiProc --local_threads $(jq -r .preprocess.threads config.json) preprocess /bids /preprocess \
+            --TR $(jq -r .preprocess.TR config.json) \
+            --labels $(jq -r .crop_atlas.labels2copy_path config.json) \
+            --commonspace_reg template_registration=$(jq -r .preprocess.commonspace_coreg config.json) \
+            --bold2anat_coreg registration=$(jq -r .preprocess.bold2anat_coreg config.json)
     fi
+fi
+
+
+####################################################################################################################################################
+#Downscaling Labels for convenience
+
+if [[ $(jq -r .downscale_labels.do config.json) == 1 ]]; then
+    bash downscale_labels.sh "$out_data_dir" --verbose $(jq -r .downscale_labels.verbose config.json)
 fi
 
 ####################################################################################################################################################
 #Running Confound Correction
 
-if [[ $(jq -r .confound config.json) == 1 ]]; then
+if [[ $(jq -r .confound.do config.json) == 1 ]]; then
     #changed FD censoring from 0.05 to 0.02 ???
     # --match_number_timepoints True ???
     mkdir "$out_data_dir/confound"
     singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess -B $out_data_dir/confound:/confound \
         -B "$out_data_dir/croped_template:/croped_template" /volatile/home/pl279327/rabies.sif confound_correction /preprocess /confound \
-        --highpass 0.01 --smoothing_filter 0.3 --lowpass 0.1 --conf_list CSF_signal mot_6 global_signal --edge_cutoff 30 \
+        --highpass $(jq -r .confound.highpass config.json) \
+        --smoothing_filter $(jq -r .confound.smoothing_filter config.json) \
+        --lowpass $(jq -r .confound.lowpass config.json) \
+        --conf_list $(jq -r .confound.conf_list config.json) \
+        --edge_cutoff $(jq -r .confound.edge_cutoff config.json) \
         --frame_censoring FD_censoring=true,FD_threshold=0.05,DVARS_censoring=false,minimum_timepoint=3
+fi
+
+####################################################################################################################################################
+#Running RSS common_bold
+
+if [[ $(jq -r .RSS_common_bold.do config.json) == 1 ]]; then
+    bash RSS_common_bold.sh $out_data_dir --verbose $(jq -r .RSS_common_bold.verbose config.json)
 fi
 
 ####################################################################################################################################################
 #Running Codes for melodic
 
-if [[ $(jq -r .melodic.RSS_common_bold config.json) == 1 ]]; then
-    bash melodic_common_bold.sh $out_data_dir
-fi
-
-if [[ $(jq -r .melodic.global_melodic.do config.json) == 1 ]]; then
+if [[ $(jq -r .melodic.do config.json) == 1 ]]; then
 
     cmd="bash melodic_pipeline.sh $out_data_dir"
-    if [[ $(jq -r .melodic.global_melodic.specify_dimension config.json) == 1 ]]; then
-        cmd+=" -d $(jq -r .melodic.global_melodic.dimension config.json)"
+    if [[ $(jq -r .melodic.specify_dimension config.json) == 1 ]]; then
+        cmd+=" -d $(jq -r .melodic.dimension config.json)"
     fi
 
-    if [[ $(jq -r .melodic.global_melodic.report config.json) == 1 ]]; then
+    if [[ $(jq -r .melodic.report config.json) == 1 ]]; then
         cmd+=" -r"
     fi
 
-     if [[ $(jq -r .melodic.global_melodic.verbose config.json) == 1 ]]; then
+     if [[ $(jq -r .melodic.verbose config.json) == 1 ]]; then
         cmd+=" -v"
     fi
 

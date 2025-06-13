@@ -2,9 +2,9 @@
 
 #==============================================================================
 #==============================================================================
-# Created on 27/01/2025 by Pierre Labouré
+# Created on 10/03/2025 by Pierre Labouré
 
-# Apply Brain extraction to all commonspace Bold images from RABIES preprocessing step, multiply the masks obtained and input it to melodic
+# Temporal concatenate confound corrected runs of the same subject into a single run
 #==============================================================================
 #==============================================================================
 
@@ -16,7 +16,6 @@ usage() {
     echo "Arguments:"
     echo "  input_data_dir     Mandatory argument for input directory"
     echo "Options:"
-    echo "  -d, --dimension    Number of components for ICA (must be an integer)"
     echo "  -h, --help         Show this help message and exit"
     exit 1
 }
@@ -33,7 +32,6 @@ input_data_dir="$1"
 echo "Input Data Directory: $input_data_dir"
 shift  # Move past the first argument
 
-cmd="melodic -i "$input_data_dir/list/listConfound.txt" -o $input_data_dir/melodic"
 if [[ -d "$input_data_dir/masks" ]]; then
     cmd+=" -m $input_data_dir/masks/melodic_mask.nii.gz"
 fi
@@ -43,19 +41,6 @@ while [[ "$#" -gt 0 ]]; do
     case "$1" in
         -h|--help)
             usage
-            ;;
-        -d|--dimension)
-            shift
-            if [[ -n "$1" && "$1" =~ ^[0-9]+$ ]]; then
-                echo "ICA Dimension: $1"
-                cmd+=" -d $1"
-            else
-                echo "Error: --dimension requires an integer argument." >&2
-                usage
-            fi
-            ;;
-        -r|--report)
-            cmd+=" --report"
             ;;
         -v|--verbose)
             cmd+=" --verbose"
@@ -68,25 +53,32 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+confound_data_dir="$input_data_dir/confound/confound_correction_datasink/cleaned_timeseries"
+concat_runs_dir="$input_data_dir/concatenated_runs/confound_correction_datasink"
+mkdir -p "$concat_runs_dir"
 
+# Find all directories, extract their base name before "_task-rest", and get unique prefixes
 
+prefixes=$(find "$confound_data_dir" -mindepth 2 -maxdepth 2 -type f -wholename '*_task-rest*' | 
+           awk -F'_task-rest' '{print $1$2}' | sort -u)
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate rss
+for prefix in $prefixes; do
+    echo "Processing prefix: $prefix"
+    
+    # Find all directories matching this prefix
+    matching_files=$(find "$confound_data_dir" -mindepth 2 -maxdepth 2 -type f -name "$(basename $prefix)*")
 
-# make a list of all confound corrected maps
-mkdir -p "$input_data_dir/list"
-list_path="$input_data_dir/list/listConfound.txt"
-touch "$list_path"
-> "$list_path"
+    first_image=1
+     for file in $matching_files; do
+        concat_run="$concat_runs_dir/$(basename $prefix)_run-00_confound_corrected.nii.gz"
+        echo "  Processing file: $(basename $file)"
+        if [ $first_image -eq 1 ]; then
+            cp "$file" "$concat_run"
+            first_image=0
+        else
+            fslmerge -t "$concat_run" "$concat_run" "$file"
 
-confound_path="$input_data_dir/confound/confound_correction_datasink/cleaned_timeseries"
-find "$confound_path" -type f -name '*nii.gz' | sort | while read file; do
-    realpath "$file" >> "$list_path"
+        fi
+    done
 done
 
-# make dir for output
-mkdir -p "$input_data_dir/melodic"
-cmd+=" --seed=1"
-echo -e "\n Running $cmd\n"
-eval "$cmd"

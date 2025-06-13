@@ -2,10 +2,9 @@
 
 #==============================================================================
 #==============================================================================
-# Created on 03/03/2025 by Pierre Labouré
+# Created on 06/03/2025 by Pierre Labouré
 
-# Properly downscale the "croped_labels.nii.gz" map into RABIES commonspace dimensions
-# This function uses the croped mask from "croped_template"
+# Applied to a processing dir, use RSS masks of bold images to crop corresponding anatomical scans
 #==============================================================================
 #==============================================================================
 
@@ -14,17 +13,16 @@ usage() {
     echo "Usage: $0 <process_dir>"
     echo ""
     echo "Arguments:"
-    echo "  process_dir     Mandatory argument for input processing directory which contains bids dir and rabies dirs"
+    echo "  process_dir     Mandatory argument for input bids directory"
     echo "Options:"
     echo "  -v, --verbose      How much this function talks   "
     echo "  -h, --help         Show this help message and exit"
     exit 1
 }
 
-
-# Ensure at least one argument (bids_dir) is provided
+# Ensure at least one argument (process_dir) is provided
 if [[ $# -lt 1 ]]; then
-    echo "Error: Missing mandatory argument <process_dir> ." >&2
+    echo "Error: Missing mandatory argument <process_dir>." >&2
     usage
 fi
 
@@ -33,7 +31,8 @@ verbose=1
 
 # Assign required first argument
 process_dir="$1"
-shift 1  # Move past the first argument
+shift  # Move past the first argument
+
 
 # Parse optional arguments
 while [[ "$#" -gt 0 ]]; do
@@ -65,20 +64,33 @@ else
     LOG_OUTPUT="/dev/null"  # Suppress output
 fi
 
-TEMP_dir=$(mktemp -d)
+# Logging function
+log() {
+    echo "[LOG]: $@" > "$LOG_OUTPUT"
+}
 
-croped_template_dir="$process_dir/croped_template"
-croped_mask="$croped_template_dir/croped_mask.nii.gz"
 
-downscaled_labels="$croped_template_dir/downscaled_labels.nii.gz"
-commonspace_mask=$(find "$process_dir/preprocess/bold_datasink/commonspace_mask" -maxdepth 3 -type f -name '*.nii.gz' -print -quit)
-echo "$commonspace_mask"
+TEMP_FOLDER=$(mktemp -d)
+mkdir -p "$TEMP_FOLDER/masks" "$TEMP_FOLDER/transforms"
 
-antsRegistrationSyN.sh -d 3 -f "$commonspace_mask" -m "$croped_mask" -o "$TEMP_dir/downscale" -n 20 -t 'a'
-antsApplyTransforms -d 3 -i "$croped_template_dir/croped_labels.nii.gz" -r "$commonspace_mask" -o "$TEMP_dir/downscaled.nii.gz" \
-    -t "$TEMP_dir/downscale0GenericAffine.mat" -n 'NearestNeighbor'
+find "$process_dir/bids" -type d -name 'sub-*' | while read dir; do
+    subname=$(basename "$dir")
 
-fslmaths "$TEMP_dir/downscaled.nii.gz" -add 0.2 "$downscaled_labels" -odt 'int'
+    sub_anat_dir="$process_dir/bids/$subname/anat"
+    sub_func_dir="$process_dir/bids/$subname/func"
+
+    anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
+    func_img=$(find "$sub_func_dir" -type f -name '*.nii.gz' | sort | tail -n 1)
+
+    filename=$(basename "$func_img" .nii.gz)
+    RSS_mask="$process_dir/RSS/bold/$subname/${filename}.nii.gz"
+
+    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 55 -1
+
+    antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$file" -o "$TEMP_FOLDER/transforms/${filename}" -n 20 -t 'r' > "$LOG_OUTPUT"
+    antsApplyTransforms -d 3 -i "$RSS_mask" -r "$anat_img" -o "$TEMP_FOLDER/masks/${filename}.nii.gz" -t "$TEMP_FOLDER/transforms/${filename}0GenericAffine.mat" > "$LOG_OUTPUT"
+    fslmaths "$anat_img" -mul "$TEMP_FOLDER/masks/${filename}.nii.gz" "${anat_img}"
+
+done
 
 rm -rf "$TEMP_FOLDER"
-

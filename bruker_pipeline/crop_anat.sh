@@ -75,21 +75,55 @@ crop_script="$(pwd)/crop_img2rigidReg.py"
 
 TEMP_FOLDER=$(mktemp -d)
 
+#IS_crop=$(jq -r .crop_anat.IS_crop config.json)
 
+cropper() {
 
-find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir; do
+    dir="$1"
+    TEMP_FOLDER="$2"
+
+    IS_crop=$(jq -r .crop_anat.IS_crop config.json)
     sub_func_dir="$dir/func"
     sub_anat_dir="$dir/anat"
 
     func_img=$(find "$sub_func_dir" -type f -name '*.nii.gz' | sort | tail -n 1)
     anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
-    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 55 -1
-    antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$func_img" -o "$TEMP_FOLDER/R" -n 20 -t 'r' > "$LOG_OUTPUT"
+    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 $IS_crop -1
+    frame0func_path="$TEMP_FOLDER/func0.nii.gz"
+    fslroi "$func_img" "$frame0func_path" 0 1
+    antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$frame0func_path" -o "$TEMP_FOLDER/R" -n 20 -t 'r' > "$LOG_OUTPUT"
 
     python "$crop_script" -i "$anat_img" -r "$TEMP_FOLDER/RWarped.nii.gz" > "$LOG_OUTPUT"
     rm -f "$anat_img"
     mv "$sub_anat_dir/crop.nii.gz" "$anat_img"
+}
 
+
+find "$bids_dir" -type d -name 'sub-*' | while read dir; do
+    has_ses_dirs=false
+    # Look for ses-* subdirectories inside sub-*
+    for ses_dir in "$dir"/ses-*; do
+        if [ -d "$ses_dir" ]; then
+            has_ses_dirs=true
+            # Check if this ses-* dir contains both anat and func
+            if [ -d "$ses_dir/anat" ] && [ -d "$ses_dir/func" ]; then
+                # Output relative path from bids_dir
+                ## sub_dirname="${ses_dir#$bids_dir/}"
+                echo "Exploring $ses_dir"
+                cropper "$ses_dir" "$TEMP_FOLDER"
+            fi
+        fi
+    done
+
+    # If no ses-* subdirs, check sub-* dir directly
+    if [ "$has_ses_dirs" = false ]; then
+        if [ -d "$dir/anat" ] && [ -d "$dir/func" ]; then
+            ## sub_dirname="${dir#$bids_dir/}"
+            echo "Exploring $dir"
+            cropper "$dir" "$TEMP_FOLDER"
+        fi
+    fi
 done
 
-#rm -rf "$TEMP_FOLDER"
+
+rm -rf "$TEMP_FOLDER"

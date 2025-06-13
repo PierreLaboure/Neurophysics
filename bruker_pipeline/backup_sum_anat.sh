@@ -70,6 +70,43 @@ log() {
     echo "[LOG]: $@" > "$LOG_OUTPUT"
 }
 
+# Define a function to copy anat files to backup and sum them inside of temp dir
+backup_and_sum() {
+    bids_dir="$1"
+    backup_dir="$2"
+    dir="$3"
+    TEMP_dir="$4"
+
+    temp_image="$TEMP_FOLDER/temp_multiplied_image.nii.gz"
+
+    log "Making backup for $dir"
+    mkdir -p "$backup_dir/$dir"
+    find "$bids_dir/$dir/anat" -type f | while read file; do
+        filename=$(basename "$file")
+        cp "$file" "$backup_dir/$dir/$filename"
+        rm "$file"
+    done
+    
+    log "Summing all T2w in $dir"
+    first_image=1
+    find "$backup_dir/$dir" -type f -name "*.nii.gz" | while read image; do
+        if [ $first_image -eq 1 ]; then
+            cp "$image" "$temp_image"
+            first_image=0
+        else
+            fslmaths "$temp_image" -add "$image" "$temp_image"
+        fi
+    done
+
+    file=$(find "$backup_dir/$dir" -type f -name '*.nii.gz' | sort | head -n 1)
+    filename=$(basename "$file")
+    log "Creating new single anat image : $filename"
+    cp "$temp_image" "$bids_dir/$dir/anat/${filename%%_*}_T2w.nii.gz"
+    
+
+}
+
+
 TEMP_FOLDER=$(mktemp -d)
 temp_image="$TEMP_FOLDER/temp_multiplied_image.nii.gz"
 
@@ -80,33 +117,30 @@ if [[ ! -d "$process_dir/backupT2map" ]];then
     backup_dir="$process_dir/backupT2map"
     mkdir -p "$backup_dir"
 
-    find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir; do
-        sub_dirname=$(basename "$dir")
-        log "Making backup for $sub_dirname"
-
-        mkdir -p "$backup_dir/$sub_dirname"
-        find "$dir/anat" -type f | while read file; do
-            filename=$(basename "$file")
-            cp "$file" "$backup_dir/$sub_dirname/$filename"
-            rm "$file"
-        done
-        
-        log "Summing all T2w in $sub_dirname"
-        first_image=1
-        find "$backup_dir/$sub_dirname" -type f -name "*.nii.gz" | while read image; do
-            if [ $first_image -eq 1 ]; then
-                cp "$image" "$temp_image"
-                first_image=0
-            else
-                fslmaths "$temp_image" -add "$image" "$temp_image"
+    find "$bids_dir" -type d -name 'sub-*' | while read dir; do
+        has_ses_dirs=false
+        # Look for ses-* subdirectories inside sub-*
+        for ses_dir in "$dir"/ses-*; do
+            if [ -d "$ses_dir" ]; then
+                has_ses_dirs=true
+                # Check if this ses-* dir contains both anat and func
+                if [ -d "$ses_dir/anat" ] && [ -d "$ses_dir/func" ]; then
+                    # Output relative path from bids_dir
+                    sub_dirname="${ses_dir#$bids_dir/}"
+                    backup_and_sum "$bids_dir" "$backup_dir" "$sub_dirname" "$TEMP_FOLDER"
+                fi
             fi
         done
 
-        file=$(find "$backup_dir/$sub_dirname" -type f -name '*.nii.gz' | sort | head -n 1)
-        filename=$(basename "$file")
-        log "Creating new single anat image : $filename"
-        cp "$temp_image" "$dir/anat/${filename%%_*}_T2w.nii.gz"
+        # If no ses-* subdirs, check sub-* dir directly
+        if [ "$has_ses_dirs" = false ]; then
+            if [ -d "$dir/anat" ] && [ -d "$dir/func" ]; then
+                sub_dirname="${dir#$bids_dir/}"
+                backup_and_sum "$bids_dir" "$backup_dir" "$sub_dirname" "$TEMP_FOLDER"
+            fi
+        fi
     done
+
 
 else
     echo "Backup and Sum already done"

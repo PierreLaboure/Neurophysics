@@ -74,7 +74,7 @@ TEMP_FOLDER=$(mktemp -d)
 #mkdir "$TEMP_FOLDER"
 
 template_path=$(jq -r .crop_atlas.template2crop_path config.json)
-croped_template="$process_dir/croped_template/croped_template.nii"
+croped_template="$process_dir/croped_template/croped_template.nii.gz"
 cp "$template_path" "$croped_template"
 
 labels_path=$(jq -r .crop_atlas.labels2copy_path config.json)
@@ -99,21 +99,64 @@ cp "$WMmask_path" "$croped_WMmask"
 
 bids_dir="$process_dir/bids"
 
-count=0
-find "$bids_dir" -mindepth 1 -maxdepth 1 -type d -name 'sub-*' | while read dir; do
-    ((count++))
+registrer() {
+    
+    dir="$1"
+    TEMP_FOLDER="$2"
+    croped_template="$3"
+
     sub_anat_dir="$dir/anat"
     anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
-    antsRegistrationSyN.sh -d 3 -f "$croped_template" -m "$anat_img" -o "$TEMP_FOLDER/R${count}" -n 20 -t 'r' > "$LOG_OUTPUT"
+    antsRegistrationSyN.sh -d 3 -f "$croped_template" -m "$anat_img" -o "$TEMP_FOLDER/R${count}" -n 20 -t 'r' > "$LOG_OUTPUT"  
+}
 
+
+
+count=0
+find "$bids_dir" -type d -name 'sub-*' | while read dir; do
+    ((count++))
+    has_ses_dirs=false
+    # Look for ses-* subdirectories inside sub-*
+    for ses_dir in "$dir"/ses-*; do
+        if [ -d "$ses_dir" ]; then
+            has_ses_dirs=true
+            # Check if this ses-* dir contains both anat and func
+            if [ -d "$ses_dir/anat" ] && [ -d "$ses_dir/func" ]; then
+                # Output relative path from bids_dir
+                ## sub_dirname="${ses_dir#$bids_dir/}"
+                echo "Exploring $ses_dir"
+                registrer "$ses_dir" "$TEMP_FOLDER" "$croped_template"
+            fi
+        fi
+    done
+
+    # If no ses-* subdirs, check sub-* dir directly
+    if [ "$has_ses_dirs" = false ]; then
+        if [ -d "$dir/anat" ] && [ -d "$dir/func" ]; then
+            ## sub_dirname="${dir#$bids_dir/}"
+            echo "Exploring $dir"
+            registrer "$dir" "$TEMP_FOLDER" "$croped_template"
+        fi
+    fi
 done
+
+
 
 find "$TEMP_FOLDER" -type f -regex '.*/R[0-9]+Warped\.nii\.gz' | while read file; do
     python "$crop_script" -i "$croped_template" -r "$file" --inplace 1 > "$LOG_OUTPUT"
+
     python "$crop_script" -i "$croped_labels" -r "$file" --inplace 1 > "$LOG_OUTPUT"
+    fslmaths "$croped_labels" -add 0.2 "$croped_labels" -odt 'int'
+
     python "$crop_script" -i "$croped_mask" -r "$file" --inplace 1 > "$LOG_OUTPUT"
+    fslmaths "$croped_mask" -add 0.2 "$croped_mask" -odt 'int'
+
     python "$crop_script" -i "$croped_CSFmask" -r "$file" --inplace 1 > "$LOG_OUTPUT"
+    fslmaths "$croped_CSFmask" -add 0.2 "$croped_CSFmask" -odt 'int'
+
     python "$crop_script" -i "$croped_WMmask" -r "$file" --inplace 1 > "$LOG_OUTPUT"
+    fslmaths "$croped_WMmask" -add 0.2 "$croped_WMmask" -odt 'int'
+
     #python "$crop_script" -i "$croped_Vascular_mask" -r "$file" --inplace 1 > "$LOG_OUTPUT"
 done
 

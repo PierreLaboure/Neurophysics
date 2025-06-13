@@ -75,20 +75,35 @@ def main(args = None):
 
 
     ROI_names = parameters["ROI_names"]
+    dict_map = {
+        'posterior_hypothalamic_nucleus right' : 'PHN',
+        'posterior_hypothalamic_nucleus left' : 'PHN',
+        'paraventricular_hypothalamic_nucleus_anterior_parvic right' : 'PHNAP',
+        'paraventricular_hypothalamic_nucleus_anterior_parvic left' : 'PHNAP',
+        'median_preoptic_nucleus middle' : 'MnPN',
+        'lateral_preoptic_area right' : 'LPA',
+        'lateral_preoptic_area left' : 'LPA',
+        'medial_preoptic_nucleus right' : 'MlPN',
+        'medial_preoptic_nucleus left' : 'MlPN',
+        'lateral_hypothalamic_area right' : 'LHA',
+        'lateral_hypothalamic_area left' : 'LHA',
+        'mammillary_nucleus right' : 'MN',
+        'mammillary_nucleus left' : 'MN',
+        'dorsomedial_hypothalamus right' : 'DMH',
+        'dorsomedial_hypothalamus left' : 'DMH',
+        'supramammillary_nucleus middle' : 'SMN',
+        'premammillary_nucleus right' : 'PMN',
+        'premammillary_nucleus left' : 'PMN'
+    }
+
+    ROI_names_short = []
+    for name in ROI_names:
+        ROI_names_short.append(dict_map[name])
+
     #ROI_names = [str(k+1) for k in range(len(ROI_names))]
     agg_LR = parameters["agg_LR"]
 
-    # Plot connectogram
-    if not agg_LR:
-        node_angles = node_angle(ROI_names)
-        fig, ax = plt.subplots(figsize = (10,10), facecolor="black", subplot_kw=dict(polar=True))
-        plot_connectivity_circle(mean_FC, ROI_names, node_angles=node_angles, ax=ax)
-    else:
-        node_angles = circular_layout(ROI_names, ROI_names, start_pos=100)
-        fig, ax = plt.subplots(figsize = (10,10), facecolor="black", subplot_kw=dict(polar=True))
-        plot_connectivity_circle(mean_FC, ROI_names, node_angles=node_angles, ax=ax, interactive = True,
-                                  colorbar_size = 0.6, colorbar_pos=(-0.7, 0.5), fontsize_names = 15, fontsize_colorbar = 15, vmin = -0.1, vmax = 0.2)
-    
+    # Make mean FC matrix
     figure_dir = os.path.join(output_path, "Connectograms")
     os.makedirs(figure_dir, exist_ok=True)
     if subsetSub:
@@ -96,10 +111,33 @@ def main(args = None):
         mean_FC_name = os.path.join(figure_dir, "mean_FC_"+os.path.basename(matrix_list).split('.')[0]+".npy")
     else:
         figurename = os.path.join(figure_dir, "Connectogram_all.eps")
+        figurename_svg = os.path.join(figure_dir, "Connectogram_all.svg")
         mean_FC_name = os.path.join(figure_dir, "mean_FC_all.npy")
-    fig.savefig(figurename, format='eps', bbox_inches='tight')
     np.save(mean_FC_name, mean_FC)
 
+    # Plot connectogram
+    if not agg_LR:
+        node_angles = node_angle(ROI_names)
+        fig, ax = plt.subplots(figsize = (15, 15), facecolor="white", subplot_kw=dict(polar=True))
+        vmin = 0.1
+        thr = np.count_nonzero(mean_FC>=vmin)//2
+
+        fig.text(0.76, 0.35, "Pearson's R", fontsize = 22, rotation = -90)
+        fig.text(0.62, 0.7, "Right", fontsize = 25)
+        fig.text(0.2, 0.7, "Left", fontsize = 25)
+
+        plot_connectivity_circle(mean_FC, ROI_names_short, node_angles=node_angles, node_colors = [(1, 1, 1, 1)], n_lines = thr,
+                                 node_edgecolor = 'black', textcolor = 'black', facecolor = 'white', 
+                                 ax=ax, vmin = vmin, vmax = 0.4, colormap = 'rainbow', 
+                                 linewidth = 5, colorbar_size = 0.4, colorbar_pos=(-0.85, 0.3), fontsize_colorbar = 15,
+                                 fontsize_names = 18)
+    else:
+        node_angles = circular_layout(ROI_names, ROI_names, start_pos=100)
+        fig, ax = plt.subplots(figsize = (10,10), facecolor="black", subplot_kw=dict(polar=True))
+        plot_connectivity_circle(mean_FC, ROI_names, node_angles=node_angles, ax=ax, interactive = True,
+                                  colorbar_size = 0.6, colorbar_pos=(-0.7, 0.5), fontsize_names = 15, fontsize_colorbar = 15, vmin = -0.1, vmax = 0.2)
+    fig.savefig(figurename, format='eps', bbox_inches='tight')
+    fig.savefig(figurename_svg, format='svg', bbox_inches='tight')
 
 
 if __name__ == "__main__":

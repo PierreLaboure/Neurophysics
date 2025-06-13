@@ -2,9 +2,9 @@
 
 #==============================================================================
 #==============================================================================
-# Created on 25/02/2025 by Pierre Labouré
+# Created on 06/03/2025 by Pierre Labouré
 
-# Apply Brain extraction to all commonspace Bold images from RABIES preprocessing step, multiply the masks obtained
+# Apply brain extraction on all bold scans
 #==============================================================================
 #==============================================================================
 
@@ -54,34 +54,28 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate rss
 
 # create RSS/input and RSS/masks
-TEMP_FOLDER=$(mktemp -d)
-mkdir -p "$TEMP_FOLDER/input" "$TEMP_FOLDER/masks"
+mkdir -p "$input_data_dir/RSS" "$input_data_dir/RSS/input" "$input_data_dir/RSS/masks" "$input_data_dir/RSS/bold"
 
 
-# extract all commonspace bold (at least some repetitions, not necessarily the 400)
+# extract all input bold (at least some repetitions, not necessarily the 400)
 # cp them to RSS/input
-find "$input_data_dir/preprocess/bold_datasink/commonspace_bold" -type f -name '*nii.gz' | while read file; do
-    filename=$(basename "$file")
-    name="${filename%%".nii.gz"}"
-    cp "$file" "$TEMP_FOLDER/input/${name}_0000.nii.gz"
-done
-RS2_predict -i "$TEMP_FOLDER/input" -o "$TEMP_FOLDER/masks" -m "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt" -device "cpu"
 
+find "$input_data_dir/bids" -type f -name '*bold.nii.gz' -mindepth 2 | while read file; do
+    filename=$(basename "$file" .nii.gz)
+    subname="${filename%%_task*}"
+    mkdir -p "$input_data_dir/RSS/bold/$subname"
 
-# multiply all masks output
-temp_file="$TEMP_FOLDER/masks/temp_multiplied_image.nii.gz"
-first_image=1
-find "$TEMP_FOLDER/masks" -type f -name "*.nii.gz" | while read image; do
-    if [ $first_image -eq 1 ]; then
-        cp "$image" "$temp_file"
-        first_image=0
-    else
-        fslmaths "$temp_file" -mul "$image" "$temp_file"
-    fi
+    cp "$file" "$input_data_dir/RSS/input/${filename}_0000.nii.gz"
 done
 
-mkdir -p "$input_data_dir/masks"
-cp "$temp_file" "$input_data_dir/masks/melodic_mask.nii.gz"
 
 
-rm -rf "$TEMP_FOLDER"
+RS2_predict -i "$input_data_dir/RSS/input" -o "$input_data_dir/RSS/masks" -m "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt" -device "cpu"
+
+find "$input_data_dir/RSS/masks" -type f | while read file; do
+    filename=$(basename "$file" _0000.nii.gz)
+    subname="${filename%%_task*}"
+    cp "$file" "$input_data_dir/RSS/bold/$subname/${filename}.nii.gz"
+done
+
+rm -rf "$input_data_dir/RSS/input" "$input_data_dir/RSS/masks"

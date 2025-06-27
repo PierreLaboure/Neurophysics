@@ -5,6 +5,7 @@ import os
 import re
 import sys
 
+# Script to clean out Helper.csv by keeping only scans we are going to use later with rabies
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Optional app description')
@@ -43,6 +44,7 @@ if __name__ == "__main__":
                 filled = True
         if filled:
             del dict_scans_processings[df.loc[sub_idx[i], "sub"]][0]
+
 
     filter1 = [df1.loc[i, 'ScanID'] in (dict_scans_processings[df1.loc[i, "RawData"]].keys()) for i in df1.index]
     df1 = df1[filter1]

@@ -42,7 +42,7 @@ out_name="Helper"
 
 if [[ $(jq -r .raw2bids.convert config.json) == 1 ]]; then
     echo "Converting raw data from $raw_data_dir to bids format, verbose $(jq -r .raw2bids.verbose config.json)"
-    bash raw_process.sh "$raw_data_dir" "$out_data_dir" -d $(jq -r .raw2bids.denoise config.json) -v $(jq -r .raw2bids.verbose config.json)
+    bash raw_process.sh "$raw_data_dir" "$out_data_dir" -v $(jq -r .raw2bids.verbose config.json)
 fi
 
 bids_dir="$out_data_dir/bids"

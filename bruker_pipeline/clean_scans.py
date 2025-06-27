@@ -12,43 +12,41 @@ if __name__ == "__main__":
                         help='path to helper.csv')
     parser.add_argument('scans_path', type=str,
                         help='path to Scans.xlsx')
-    parser.add_argument('-d', '--denoise', type=int,
-                        help='1 if we want to use scans denoised by bruker instead of base scans, 0 otherwise')
     
 
     args = parser.parse_args()
     helper_path = args.helper_path
     scans_path = args.scans_path
-    denoise = args.denoise
 
-    df = pd.read_excel(scans_path, header = 0, names = ['sub', 'scan'])
-
+    df = pd.read_excel(scans_path, header = 0, names = ['sub', 'scan', 'processing'])
+    df.loc[df['processing'].isna(), "processing"] = "P1"
     df1 = pd.read_csv(helper_path)
 
     df['is_first'] = df['sub'].notna() & (df['sub'].shift(1).isna() | (df.index == df.index[0]))
     sub_idx = df[df['is_first']].index.union([df.index[-1]+1])
 
-    dict = {}
+    dict_scans_processings = {}
+
+
     for subject_id in df1["RawData"].unique():
-        dict[subject_id] = [0]
+        dict_scans_processings[subject_id] = {0:0}
+
 
     for i in range(len(sub_idx)-1):
-        scans = []
+        filled = False
         for k in range(sub_idx[i]+1, sub_idx[i+1]):
-            v = df.loc[k, "scan"]
-            if not pd.isna(v):
-                scans.append(int(v.strip('E')))
-        dict[df.loc[sub_idx[i], "sub"]] = scans
 
+            v = df.loc[k, ["scan", 'processing']]
 
-    filter = [df1.loc[i, 'ScanID'] in (dict[df1.loc[i, "RawData"]]) for i in df1.index]
-    df1 = df1[filter]
+            if not pd.isna(v["scan"]):
+                dict_scans_processings[df.loc[sub_idx[i], "sub"]][int(v["scan"].strip('E'))] = int(v["processing"].strip('P'))
+                filled = True
+        if filled:
+            del dict_scans_processings[df.loc[sub_idx[i], "sub"]][0]
 
-    if denoise:
-        df1_filtered = df1.loc[df1.groupby(['ScanID', 'RawData'])['RecoID'].idxmax()]
-        df1_filtered = df1_filtered.reset_index(drop=True)
-    else:
-        df1_filtered = df1.loc[df1.groupby(['ScanID', 'RawData'])['RecoID'].idxmin()]
-        df1_filtered = df1_filtered.reset_index(drop=True)
+    filter1 = [df1.loc[i, 'ScanID'] in (dict_scans_processings[df1.loc[i, "RawData"]].keys()) for i in df1.index]
+    df1 = df1[filter1]
+    filter2 = [df1.loc[i, 'RecoID'] == dict_scans_processings[df1.loc[i, 'RawData']][df1.loc[i, 'ScanID']] for i in df1.index]
+    df1 = df1[filter2]
     
-    df1_filtered.to_csv(helper_path, index = False)
+    df1.to_csv(helper_path, index = False)

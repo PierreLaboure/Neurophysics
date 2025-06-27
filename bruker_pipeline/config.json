@@ -1,19 +1,18 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/FMRI_HAMBURGERS/iBOT_ctrl/raw",
+    "raw_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/CTRL/raw",
   
     "raw2bids": {
     	"convert": 0,
-    	"denoise": 0,
     	"verbose": 1
     },
     "nifti2deoblique": {
-    	"deoblique": 0,
+    	"deoblique": 1,
     	"verbose": 1
     },
     "concat_bold_runs": 0,
-    "extract_topup": 0,
+    "extract_topup": 1,
     "topup": {
-    	"correct": 1,
+    	"correct": 0,
     	"acqparams_path": "acqparams.txt",
     	"swell_factor" : 10,
     	"verbose": 1

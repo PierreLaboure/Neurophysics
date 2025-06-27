@@ -27,15 +27,6 @@ out_data_dir="$2"
 shift 2  # Move past the first two arguments
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -d|--denoise)
-            if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then  # Check if next argument exists and is a number
-                denoise="$2"
-                shift 2  # Move past both '-d' and its value
-            else
-                echo "Error: wrong input type for denoise : '$1'" >&2
-                exit 1
-            fi
-            ;;
         -v|--verbose)
             if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then  # Check if next argument exists and is a number
                 verbose="$2"
@@ -99,7 +90,7 @@ task_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "ta
 #removing useless scans
 source "$(conda info --base)/etc/profile.d/conda.sh" > "$LOG_OUTPUT"
 conda activate stable312 > "$LOG_OUTPUT"
-python clean_scans.py "$filePath" "$out_data_dir/Scans.xlsx" -d $denoise > $LOG_OUTPUT
+python clean_scans.py "$filePath" "$out_data_dir/Scans.xlsx" > $LOG_OUTPUT
 
 #converting to bids
 if [[ $verbose == 1 ]]; then    

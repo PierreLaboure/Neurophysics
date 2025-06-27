@@ -5,7 +5,6 @@ usage() {
     echo "  raw_data_dir     Mandatory argument for raw directory"
     echo "  out_data_dir     Mandatory argument for output directory"
     echo "Options:"
-    echo "  -d, --denoise   Enable denoising"
     echo "  -v, --verbose   How much this function talks   "
     echo "  -h, --help      Show this help message and exit"
     exit 1

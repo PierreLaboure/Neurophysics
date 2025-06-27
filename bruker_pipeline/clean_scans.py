@@ -36,6 +36,7 @@ if __name__ == "__main__":
     for i in range(len(sub_idx)-1):
         filled = False
         for k in range(sub_idx[i]+1, sub_idx[i+1]):
+
             v = df.loc[k, ["scan", 'processing']]
 
             if not pd.isna(v["scan"]):
@@ -43,6 +44,7 @@ if __name__ == "__main__":
                 filled = True
         if filled:
             del dict_scans_processings[df.loc[sub_idx[i], "sub"]][0]
+
 
     filter1 = [df1.loc[i, 'ScanID'] in (dict_scans_processings[df1.loc[i, "RawData"]].keys()) for i in df1.index]
     df1 = df1[filter1]

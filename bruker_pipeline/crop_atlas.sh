@@ -73,6 +73,8 @@ TEMP_FOLDER=$(mktemp -d)
 #TEMP_FOLDER="$process_dir/save"
 #mkdir "$TEMP_FOLDER"
 
+mkdir -p "$process_dir/croped_template"
+
 template_path=$(jq -r .crop_atlas.template2crop_path config.json)
 croped_template="$process_dir/croped_template/croped_template.nii.gz"
 cp "$template_path" "$croped_template"

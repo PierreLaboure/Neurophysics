@@ -20,7 +20,7 @@ if __name__ == "__main__":
     scans_path = args.scans_path
 
     df = pd.read_excel(scans_path, header = 0, names = ['sub', 'scan', 'processing'])
-    df.loc[df['processing'].isna(), "processing"] = "P1"
+    #df.loc[df['processing'].isna(), "processing"] = "P1"
     df1 = pd.read_csv(helper_path)
 
     df['is_first'] = df['sub'].notna() & (df['sub'].shift(1).isna() | (df.index == df.index[0]))
@@ -32,7 +32,6 @@ if __name__ == "__main__":
     for subject_id in df1["RawData"].unique():
         dict_scans_processings[subject_id] = {0:0}
 
-
     for i in range(len(sub_idx)-1):
         filled = False
         for k in range(sub_idx[i]+1, sub_idx[i+1]):
@@ -40,7 +39,10 @@ if __name__ == "__main__":
             v = df.loc[k, ["scan", 'processing']]
 
             if not pd.isna(v["scan"]):
-                dict_scans_processings[df.loc[sub_idx[i], "sub"]][int(v["scan"].strip('E'))] = int(v["processing"].strip('P'))
+                if not pd.isna(v["processing"]):
+                    dict_scans_processings[df.loc[sub_idx[i], "sub"]][int(v["scan"].strip('E'))] = int(v["processing"].strip('P'))
+                else:
+                    dict_scans_processings[df.loc[sub_idx[i], "sub"]][int(v["scan"].strip('E'))] = 1
                 filled = True
         if filled:
             del dict_scans_processings[df.loc[sub_idx[i], "sub"]][0]

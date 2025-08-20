@@ -90,7 +90,7 @@ cropper() {
     anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
     fslroi "$anat_img" "$anat_img" 0 -1 0 -1 $IS_crop -1
     frame0func_path="$TEMP_FOLDER/func0.nii.gz"
-    fslroi "$func_img" "$frame0func_path" 0 1
+    fslroi "$func_img" "$frame0func_path" 10 1
     antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$frame0func_path" -o "$TEMP_FOLDER/R" -n 20 -t 'r' > "$LOG_OUTPUT"
 
     python "$crop_script" -i "$anat_img" -r "$TEMP_FOLDER/RWarped.nii.gz" > "$LOG_OUTPUT"

@@ -4,7 +4,7 @@
 #==============================================================================
 # Created on 28/02/2025 by Pierre Labouré
 
-# When dealing with T2maps with multiple echos, create a backup of the original scans before summing all the scans into a better contrast one
+# When dealing with T2maps with multiple echos, make a backup of the bids directory sum all the scans into a better contrast one
 #==============================================================================
 #==============================================================================
 
@@ -77,19 +77,23 @@ backup_and_sum() {
     dir="$3"
     TEMP_dir="$4"
 
-    temp_image="$TEMP_FOLDER/temp_multiplied_image.nii.gz"
+    temp_image="$TEMP_dir/temp_multiplied_image.nii.gz"
 
     log "Making backup for $dir"
-    mkdir -p "$backup_dir/$dir"
+    mkdir -p "$backup_dir/$dir" "$backup_dir/$dir/anat" "$backup_dir/$dir/func"
     find "$bids_dir/$dir/anat" -type f | while read file; do
         filename=$(basename "$file")
-        cp "$file" "$backup_dir/$dir/$filename"
+        cp "$file" "$backup_dir/$dir/anat/$filename"
         rm "$file"
+    done
+    find "$bids_dir/$dir/func" -type f | while read file; do
+        filename=$(basename "$file")
+        cp "$file" "$backup_dir/$dir/func/$filename"
     done
     
     log "Summing all T2w in $dir"
     first_image=1
-    find "$backup_dir/$dir" -type f -name "*.nii.gz" | while read image; do
+    find "$backup_dir/$dir/anat" -type f -name "*.nii.gz" | while read image; do
         if [ $first_image -eq 1 ]; then
             cp "$image" "$temp_image"
             first_image=0
@@ -98,7 +102,7 @@ backup_and_sum() {
         fi
     done
 
-    file=$(find "$backup_dir/$dir" -type f -name '*.nii.gz' | sort | head -n 1)
+    file=$(find "$backup_dir/$dir/anat" -type f -name '*.nii.gz' | sort | head -n 1)
     filename=$(basename "$file")
     log "Creating new single anat image : $filename"
     cp "$temp_image" "$bids_dir/$dir/anat/${filename%%_*}_T2w.nii.gz"
@@ -112,10 +116,15 @@ temp_image="$TEMP_FOLDER/temp_multiplied_image.nii.gz"
 
 bids_dir="$process_dir/bids"
 
-if [[ ! -d "$process_dir/backupT2map" ]];then
+if [[ ! -d "$process_dir/bids_backup" ]];then
 
-    backup_dir="$process_dir/backupT2map"
+    backup_dir="$process_dir/bids_backup"
     mkdir -p "$backup_dir"
+
+    #copying bids information inside of backup
+    find "$bids_dir" -type f -maxdepth 1 | while read info_file; do
+        cp "$info_file" "$backup_dir/$(basename "$info_file")"
+    done
 
     find "$bids_dir" -type d -name 'sub-*' | while read dir; do
         has_ses_dirs=false

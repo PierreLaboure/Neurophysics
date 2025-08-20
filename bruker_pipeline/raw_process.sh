@@ -86,6 +86,8 @@ task_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "ta
 #Remove string "Underscore" from subjID names
 /usr/bin/awk -F, 'BEGIN{FS = OFS = ","} {gsub(/Underscore/,"",$2)} { print }' > tmp && mv tmp $filePath
 
+
+
 #removing useless scans
 source "$(conda info --base)/etc/profile.d/conda.sh" > "$LOG_OUTPUT"
 conda activate stable312 > "$LOG_OUTPUT"

@@ -101,7 +101,6 @@ fi
 #Croping Atlas components
 
 if [[ $(jq -r .crop_atlas.crop config.json) == 1 ]]; then
-    mkdir -p "$out_data_dir/croped_template"
     bash crop_atlas.sh "$out_data_dir" --verbose $(jq -r .crop_atlas.verbose config.json)
 fi
 
@@ -115,7 +114,7 @@ if [[ $(jq -r .preprocess.do config.json) == 1 ]]; then
         singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess \
             -B "$out_data_dir/croped_template:/croped_template" /volatile/home/pl279327/rabies.sif \
             -p MultiProc --local_threads $(jq -r .preprocess.threads config.json) \
-            preprocess /bids /preprocess --TR $(jq -r .preprocess.TR config.json) \
+            preprocess /bids /preprocess \
             --labels /croped_template/croped_labels.nii.gz \
             --commonspace_reg template_registration=$(jq -r .preprocess.commonspace_reg config.json) \
             --bold2anat_coreg registration=$(jq -r .preprocess.bold2anat_coreg config.json) \
@@ -127,7 +126,6 @@ if [[ $(jq -r .preprocess.do config.json) == 1 ]]; then
         echo "Preprocessing using default templates"
         singularity run -B $out_data_dir/bids:/bids:ro -B $out_data_dir/preprocess:/preprocess /volatile/home/pl279327/rabies.sif \
             -p MultiProc --local_threads $(jq -r .preprocess.threads config.json) preprocess /bids /preprocess \
-            --TR $(jq -r .preprocess.TR config.json) \
             --labels $(jq -r .crop_atlas.labels2copy_path config.json) \
             --commonspace_reg template_registration=$(jq -r .preprocess.commonspace_coreg config.json) \
             --bold2anat_coreg registration=$(jq -r .preprocess.bold2anat_coreg config.json)
@@ -171,7 +169,7 @@ fi
 
 if [[ $(jq -r .melodic.do config.json) == 1 ]]; then
 
-    cmd="bash melodic_pipeline.sh $out_data_dir"
+    cmd="bash melodic_pipeline.sh $out_data_dir -m $(jq -r .melodic.make_list_only config.json)"
     if [[ $(jq -r .melodic.specify_dimension config.json) == 1 ]]; then
         cmd+=" -d $(jq -r .melodic.dimension config.json)"
     fi

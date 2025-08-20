@@ -17,6 +17,7 @@ usage() {
     echo "  input_data_dir     Mandatory argument for input directory"
     echo "Options:"
     echo "  -d, --dimension    Number of components for ICA (must be an integer)"
+    echo "  -m, --mlo          Only make list, exit before melodic"
     echo "  -h, --help         Show this help message and exit"
     exit 1
 }
@@ -26,6 +27,10 @@ if [[ $# -lt 1 ]]; then
     echo "Error: Missing mandatory argument <input_data_dir>." >&2
     usage
 fi
+
+
+# Default values
+mlo=0
 
 
 # Assign required first argument
@@ -52,6 +57,15 @@ while [[ "$#" -gt 0 ]]; do
             else
                 echo "Error: --dimension requires an integer argument." >&2
                 usage
+            fi
+            ;;
+        -m|--mlo)
+            if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then  # Check if next argument exists and is a number
+                mlo="$2"
+                shift  # Move past both '-d' and its value
+            else
+                echo "Error: wrong input type for verbose : '$1'" >&2
+                exit 1
             fi
             ;;
         -r|--report)
@@ -88,5 +102,12 @@ done
 # make dir for output
 mkdir -p "$input_data_dir/melodic"
 cmd+=" --seed=1"
+
+if [ $mlo -eq 1 ]; then
+    echo "List made, exiting without running melodic"
+    exit 0
+fi
+
+
 echo -e "\n Running $cmd\n"
 eval "$cmd"

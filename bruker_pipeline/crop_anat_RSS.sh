@@ -82,13 +82,20 @@ find "$process_dir/bids" -type d -name 'sub-*' | while read dir; do
     anat_img=$(find "$sub_anat_dir" -type f -name '*.nii.gz' | sort | head -n 1)
     func_img=$(find "$sub_func_dir" -type f -name '*.nii.gz' | sort | tail -n 1)
 
+    # Register using only 1 frame of the bold scan
     filename=$(basename "$func_img" .nii.gz)
+    framefunc="$TEMP_FOLDER/func/${filename}.nii.gz"
+    fslroi "$func_img" "$framefunc" 10 1
+
     RSS_mask="$process_dir/RSS/bold/$subname/${filename}.nii.gz"
 
-    fslroi "$anat_img" "$anat_img" 0 -1 0 -1 55 -1
+    #fslroi "$anat_img" "$anat_img" 0 -1 0 -1 55 -1
 
-    antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$file" -o "$TEMP_FOLDER/transforms/${filename}" -n 20 -t 'r' > "$LOG_OUTPUT"
+    antsRegistrationSyN.sh -d 3 -f "$anat_img" -m "$framefunc" -o "$TEMP_FOLDER/transforms/${filename}" -n 20 -t 'r' > "$LOG_OUTPUT"
     antsApplyTransforms -d 3 -i "$RSS_mask" -r "$anat_img" -o "$TEMP_FOLDER/masks/${filename}.nii.gz" -t "$TEMP_FOLDER/transforms/${filename}0GenericAffine.mat" > "$LOG_OUTPUT"
+    
+    fslmaths "$TEMP_FOLDER/masks/${filename}.nii.gz" -add 0.49 "$TEMP_FOLDER/masks/${filename}.nii.gz" -odt 'int' > "$LOG_OUTPUT"
+
     fslmaths "$anat_img" -mul "$TEMP_FOLDER/masks/${filename}.nii.gz" "${anat_img}"
 
 done

@@ -89,7 +89,7 @@ find "$bids_dir" -type f -name '*bold.nii.gz' | while read file; do
     
     antsRegistrationSyN.sh -d 3 -f "$croped_template" -m "$file" -o "$TEMP_FOLDER/transforms/${filename}" -n 20 -t 'r' > "$LOG_OUTPUT"
     antsApplyTransforms -d 3 -i "$RSS_mask" -r "$croped_template" -o "$TEMP_FOLDER/masks/${filename}.nii.gz" -t "$TEMP_FOLDER/transforms/${filename}0GenericAffine.mat" > "$LOG_OUTPUT"
-    fslmaths "$TEMP_FOLDER/masks/${filename}.nii.gz" "$TEMP_FOLDER/masks/${filename}.nii.gz" -odt int
+    fslmaths "$TEMP_FOLDER/masks/${filename}.nii.gz" -add 0.49 "$TEMP_FOLDER/masks/${filename}.nii.gz" -odt int
 done
 
 # Multiply all obtained masks
@@ -129,4 +129,4 @@ croped_WMmask="$process_dir/croped_template/croped_WMmask.nii.gz"
 cp "$WMmask_path" "$croped_WMmask"
 fslmaths "$croped_WMmask" -mul "$croped_mask" "$croped_WMmask"
 
-#rm -rf "$TEMP_FOLDER"
+rm -rf "$TEMP_FOLDER"

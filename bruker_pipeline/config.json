@@ -1,16 +1,16 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/CTRL/raw",
+    "raw_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/iBot/raw",
   
     "raw2bids": {
     	"convert": 0,
     	"verbose": 1
     },
     "nifti2deoblique": {
-    	"deoblique": 1,
+    	"deoblique": 0,
     	"verbose": 1
     },
     "concat_bold_runs": 0,
-    "extract_topup": 1,
+    "extract_topup": 0,
     "topup": {
     	"correct": 0,
     	"acqparams_path": "acqparams.txt",
@@ -23,7 +23,7 @@
     },
     "crop_anat": {
     	"crop": 0,
-    	"IS_crop": 0,
+    	"IS_crop": 53,
     	"verbose": 1
     },
     "crop_atlas": {
@@ -37,8 +37,7 @@
     },
     "preprocess": {
     	"do": 0,
-    	"threads" : 18,
-    	"TR": 1,
+    	"threads" : 20,
     	"bold2anat_coreg" : "SyN",
     	"commonspace_reg" : "SyN",
     	"anat_inho_cor": "Rigid"
@@ -60,7 +59,8 @@
     	"verbose": 1
     },
     "melodic": {
-	"do": 0,
+	"do": 1,
+	"make_list_only" : 1,
 	"specify_dimension": 1,
 	"dimension": 25,
 	"report": 1,

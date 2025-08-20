@@ -1,0 +1,4 @@
+bash deo_T2map.sh "/volatile/home/pl279327/Documents/DATA_THESE/iBot/raw" "/volatile/home/pl279327/Documents/DATA_THESE/iBot/process"
+bash T2map_to_commonspace.sh "/volatile/home/pl279327/Documents/DATA_THESE/iBot/raw" "/volatile/home/pl279327/Documents/DATA_THESE/iBot/process"
+python extract_metrics.py
+

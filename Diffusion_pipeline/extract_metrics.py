@@ -85,6 +85,7 @@ def extract_metrics():
                         metric_nib_map = nib.load(os.path.join(cohort_subject_dir_path, metric_nii_map))
                         metric_map = metric_nib_map.get_fdata().reshape(-1)
 
+                        #Extract metrics averaged on the whole brain
                         mask = (labels_map!=0)
                         flat_mask = np.where(mask.reshape(-1))
                         metric_value = metric_map[flat_mask[0]].mean()

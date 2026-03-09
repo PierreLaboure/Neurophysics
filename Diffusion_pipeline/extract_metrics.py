@@ -16,151 +16,155 @@ def extract_metrics():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', type=str, required=True,
-                        help='Registered Cohort Path : absolute path to a director containing all atlas label maps registered to metric maps')
+                        help='Registered cohort path: directory containing all atlas label maps registered to metric maps')
     parser.add_argument('-o', type=str, required=True,
-                        help='absolute path to save a csv file. Contains .csv extension')
+                        help='Output CSV file (with .csv extension)')
     parser.add_argument('-c', type=str, required=True,
-                        help='absolute path to json config file')
-    parser.add_argument('--verbose', type=int, help="Set this if you like being talked to. You will have "
-                                                               "to be a good listener/reader.")
-    
-    args = parser.parse_args()
+                        help='Path to JSON config file')
+    parser.add_argument('--verbose', type=int, default=0,
+                        help="Set to 1 for verbose mode")
 
+    args = parser.parse_args()
     registered_cohort_path = args.r
     output_path = args.o
     config_path = args.c
     verbose = args.verbose
 
+    # ---- Load configuration ----
     with open(config_path, "r") as outfile:
         config = json.load(outfile)
 
     metrics_list = config['diffusion_metrics_list']
-    print(metrics_list)
     ROI_list = config['ROI_index_list']
     cohort_path = config['cohort_path']
     voxel_volume = config['voxel_volume']
 
-
-    ## Creating ROI Labels Dictionnary
+    # ---- Build ROI dictionary ----
     ROI_df = pd.read_excel(ROI_list)
     ROI_labels_dict = {}
     for ROI_name in ROI_df['hierarchy']:
-        ROI_labels_right = list(ROI_df[ROI_df['hierarchy']==ROI_name]['right label'])
-        ROI_labels_left = list(ROI_df[ROI_df['hierarchy']==ROI_name]['left label'])
-        ROI_labels_dict[ROI_name + '_right'] = ROI_labels_right
-        ROI_labels_dict[ROI_name + '_left'] = ROI_labels_left
+        ROI_labels_dict[ROI_name + '_right'] = list(ROI_df.loc[ROI_df['hierarchy'] == ROI_name, 'right label'])
+        ROI_labels_dict[ROI_name + '_left'] = list(ROI_df.loc[ROI_df['hierarchy'] == ROI_name, 'left label'])
 
+    results = []
 
-
-    ## Extraction of Diffusion and Anat Metrics
-
-    #Initialization of Database dictionnary
-    dict_df = {'subject_name':[],
-            'metric_name':[],
-            'ROI_name':[],
-            'metric_value':[],
-            'metric_std':[],
-            'metric_min':[],
-            'metric_max':[],
-            'ROI_size':[],
-            }
-
-    #Loop through registered atlas label maps
+    # ---- Process each subject ----
     for file in os.listdir(registered_cohort_path):
         filepath = os.path.join(registered_cohort_path, file)
-        labels_nib_map = nib.load(filepath)
-        labels_map = labels_nib_map.get_fdata()
+        if not file.endswith(('diff_labels.nii.gz', 'anat_labels.nii.gz')):
+            continue
 
-        #Process diffusion label maps
-        if file.endswith('diff_labels.nii.gz'):
+        labels_map = nib.load(filepath).get_fdata().astype(np.int32)
+        flat_labels = labels_map.ravel()
+
+        # Precompute ROI indices (voxel indices)
+        ROI_indices = {roi: np.nonzero(np.isin(flat_labels, labels))[0]
+                       for roi, labels in ROI_labels_dict.items()}
+
+        if 'diff_labels' in file:
             subject_name = file.split('_diff_labels')[0]
-            cohort_subject_dir_path = os.path.join(cohort_path, 'diff', subject_name)
-            #Loop through diffusion metrics
-            for metric_nii_map in os.listdir(cohort_subject_dir_path):
+            subj_dir = os.path.join(cohort_path, 'diff', subject_name)
+            if not os.path.isdir(subj_dir):
+                continue
+
+            if verbose:
+                print(f"\n🧠 Processing diffusion metrics for {subject_name}")
+
+            # Loop over diffusion metrics
+            for metric_file in os.listdir(subj_dir):
                 for metric_name in metrics_list:
-                    if (metric_name+'.') in metric_nii_map:
-                        if verbose==1:
-                            print(f'processing {subject_name} for metric {metric_name}')
-                        #Load diffusion metric map
-                        metric_nib_map = nib.load(os.path.join(cohort_subject_dir_path, metric_nii_map))
-                        metric_map = metric_nib_map.get_fdata().reshape(-1)
+                    if f"{metric_name}." not in metric_file:
+                        continue
 
-                        #Extract metrics averaged on the whole brain
-                        mask = (labels_map!=0)
-                        flat_mask = np.where(mask.reshape(-1))
-                        metric_value = metric_map[flat_mask[0]].mean()
-                        metric_std = metric_map[flat_mask[0]].std()
-                        metric_min = metric_map[flat_mask[0]].min()
-                        metric_max = metric_map[flat_mask[0]].max()
-                        ROI_size = len(flat_mask[0])
+                    metric_path = os.path.join(subj_dir, metric_file)
+                    metric_data = nib.load(metric_path).get_fdata().ravel()
 
-                        dict_df['subject_name'].append(subject_name)
-                        dict_df['metric_name'].append(metric_name)
-                        dict_df['ROI_name'].append('total')
-                        dict_df['metric_value'].append(metric_value)
-                        dict_df['metric_std'].append(metric_std)
-                        dict_df['metric_min'].append(metric_min)
-                        dict_df['metric_max'].append(metric_max)
-                        dict_df['ROI_size'].append(ROI_size)
+                    # --- Whole-brain mask ---
+                    idxs = np.nonzero(flat_labels != 0)[0]
+                    vals = metric_data[idxs]
+                    results.append({
+                        'subject_name': subject_name,
+                        'metric_name': metric_name,
+                        'ROI_name': 'total',
+                        'ROI_ID': [-1],
+                        'metric_value': vals.mean(),
+                        'metric_std': vals.std(),
+                        'metric_min': vals.min(),
+                        'metric_max': vals.max(),
+                        'ROI_size': len(vals)
+                    })
 
-                        # Extract metric for all ROIs
-                        for ROI_name in ROI_labels_dict:
-                            ROI_labels = ROI_labels_dict[ROI_name]
-                            mask = np.isin(labels_map, ROI_labels)
-                            flat_mask = np.where(mask.reshape(-1))
-                            metric_value = metric_map[flat_mask[0]].mean()
-                            metric_std = metric_map[flat_mask[0]].std()
-                            metric_min = metric_map[flat_mask[0]].min()
-                            metric_max = metric_map[flat_mask[0]].max()
-                            ROI_size = len(flat_mask[0])
- 
-                            dict_df['subject_name'].append(subject_name)
-                            dict_df['metric_name'].append(metric_name)
-                            dict_df['ROI_name'].append(ROI_name)
-                            dict_df['metric_value'].append(metric_value)
-                            dict_df['metric_std'].append(metric_std)
-                            dict_df['metric_min'].append(metric_min)
-                            dict_df['metric_max'].append(metric_max)
-                            dict_df['ROI_size'].append(ROI_size)
+                    # --- Per-ROI stats ---
+                    for roi, idxs in ROI_indices.items():
+                        if len(idxs) == 0:
+                            results.append({
+                                'subject_name': subject_name,
+                                'metric_name': metric_name,
+                                'ROI_name': roi,
+                                'ROI_ID': ROI_labels_dict[roi],
+                                'metric_value': None,
+                                'metric_std': None,
+                                'metric_min': None,
+                                'metric_max': None,
+                                'ROI_size': 0
+                            })
+                            continue
 
+                        vals = metric_data[idxs]
+                        results.append({
+                            'subject_name': subject_name,
+                            'metric_name': metric_name,
+                            'ROI_name': roi,
+                            'ROI_ID': ROI_labels_dict[roi],
+                            'metric_value': vals.mean(),
+                            'metric_std': vals.std(),
+                            'metric_min': vals.min(),
+                            'metric_max': vals.max(),
+                            'ROI_size': len(vals)
+                        })
 
-        #Process Anat maps
-        if file.endswith('anat_labels.nii.gz'):
+        elif 'anat_labels' in file:
             subject_name = file.split('_anat_labels')[0]
-            cohort_subject_dir_path = os.path.join(cohort_path, 'anat', subject_name)
-            if verbose==1:
-                print(f'processing {subject_name} for volume')
-    
-            #Compute total volume of whole brain in mm3
-            total_volume = len(np.where(labels_map)[0])*voxel_volume
-            total_voxel = len(np.where(labels_map)[0])
-            dict_df['subject_name'].append(subject_name)
-            dict_df['metric_name'].append('volume')
-            dict_df['ROI_name'].append('total')
-            dict_df['metric_value'].append(total_volume)
-            dict_df['metric_std'].append(0)
-            dict_df['metric_min'].append(0)
-            dict_df['metric_max'].append(0)
-            dict_df['ROI_size'].append(total_voxel)
 
-            #Compute volume of all ROI in mm3
-            for ROI_name in ROI_labels_dict:
-                ROI_labels = ROI_labels_dict[ROI_name]
-                mask = np.isin(labels_map, ROI_labels)
-                anat_metric = len(np.where(mask.reshape(-1))[0])*voxel_volume
-                ROI_size = len(np.where(mask.reshape(-1))[0])
+            if verbose:
+                print(f"\n🧩 Processing anatomy for {subject_name}")
 
-                dict_df['subject_name'].append(subject_name)
-                dict_df['metric_name'].append('volume')
-                dict_df['ROI_name'].append(ROI_name)
-                dict_df['metric_value'].append(anat_metric)
-                dict_df['metric_std'].append(0)
-                dict_df['metric_min'].append(0)
-                dict_df['metric_max'].append(0)
-                dict_df['ROI_size'].append(ROI_size)
+            # Total brain volume
+            nonzero_vox = np.count_nonzero(flat_labels)
+            total_volume = nonzero_vox * voxel_volume
+            results.append({
+                'subject_name': subject_name,
+                'metric_name': 'volume',
+                'ROI_name': 'total',
+                'ROI_ID': [-1],
+                'metric_value': total_volume,
+                'metric_std': 0,
+                'metric_min': 0,
+                'metric_max': 0,
+                'ROI_size': nonzero_vox
+            })
 
-    database = pd.DataFrame(dict_df)
-    database.to_csv(output_path)
+            # Per-ROI volume
+            for roi, idxs in ROI_indices.items():
+                ROI_voxels = len(idxs)
+                ROI_volume = ROI_voxels * voxel_volume
+                results.append({
+                    'subject_name': subject_name,
+                    'metric_name': 'volume',
+                    'ROI_name': roi,
+                    'ROI_ID': ROI_labels_dict[roi],
+                    'metric_value': ROI_volume,
+                    'metric_std': 0,
+                    'metric_min': 0,
+                    'metric_max': 0,
+                    'ROI_size': ROI_voxels
+                })
+
+    # ---- Build DataFrame once ----
+    df = pd.DataFrame(results)
+    df.to_csv(output_path, index=False)
+    if verbose:
+        print(f"\n✅ Metrics extracted successfully → {output_path}")
 
 
 

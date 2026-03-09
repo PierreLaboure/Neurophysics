@@ -19,7 +19,7 @@ if __name__ == "__main__":
     helper_path = args.helper_path
     scans_path = args.scans_path
 
-    df = pd.read_excel(scans_path, header = 0, names = ['sub', 'scan', 'processing'])
+    df = pd.read_excel(scans_path, header = 0, names = ['sub', 'scan', 'processing'], dtype = str)
     #df.loc[df['processing'].isna(), "processing"] = "P1"
     df1 = pd.read_csv(helper_path)
 
@@ -28,15 +28,16 @@ if __name__ == "__main__":
 
     dict_scans_processings = {}
 
-
     for subject_id in df1["RawData"].unique():
         dict_scans_processings[subject_id] = {0:0}
+
 
     for i in range(len(sub_idx)-1):
         filled = False
         for k in range(sub_idx[i]+1, sub_idx[i+1]):
 
             v = df.loc[k, ["scan", 'processing']]
+            print(v)
 
             if not pd.isna(v["scan"]):
                 if not pd.isna(v["processing"]):
@@ -46,7 +47,6 @@ if __name__ == "__main__":
                 filled = True
         if filled:
             del dict_scans_processings[df.loc[sub_idx[i], "sub"]][0]
-
 
     filter1 = [df1.loc[i, 'ScanID'] in (dict_scans_processings[df1.loc[i, "RawData"]].keys()) for i in df1.index]
     df1 = df1[filter1]

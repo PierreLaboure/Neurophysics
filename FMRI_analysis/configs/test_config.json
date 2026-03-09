@@ -1,0 +1,24 @@
+{
+    "confound_dir": "/volatile/home/pl279327/Documents/DATA_THESE/iBot/process_2026_02/confound",
+    "labels2roi": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/labels2roi.json",
+    "resampled_atlas_path" : "/volatile/home/pl279327/Documents/DATA_THESE/iBot/process_2026_02/preprocess/bold_datasink/commonspace_labels/commonspace_labels.nii.gz",
+    "tr": 1.5,
+    "TimeSeries_output_dir": "/volatile/home/pl279327/Documents/DATA_THESE/ANALYSE_iBot_COMMON/robust",
+
+
+    "aggregator_path" : "/volatile/home/pl279327/Documents/Neurophysics/FMRI_analysis/configs/aggregator.json",
+    "level" : "Macro",
+    "Aggregation_output_key" : "aggregation",
+
+    "Connectivity_output_key" : "connectivity",
+    "Connectivity_method": "Pearson",
+
+    "Analysis_output_key": "analysis",
+    "subject_info" : "/volatile/home/pl279327/Documents/DATA_THESE/ANALYSE_iBot_COMMON/subject_info.json",
+    "test_method" : "ttest",
+    "analysis_factor" : ["treatment"],
+    "filters" : {
+        "sex" : "female",
+        "type" : "Mutant"
+    }
+}

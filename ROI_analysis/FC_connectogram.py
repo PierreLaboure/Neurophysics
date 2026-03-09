@@ -142,3 +142,6 @@ def main(args = None):
 
 if __name__ == "__main__":
     main()
+
+
+python -c "from neuro.dataset import TimeSeriesDataset; ds = TimeSeriesDataset.load('/volatile/home/pl279327/Documents/DATA_THESE/ANALYSE_iBot_COMMON/robust/aggregation/Triple Network/HamburgersPierreAN2256.h5'); ds.plot_run('03')" &

@@ -143,6 +143,7 @@ find "$bids_dir" -type d -name 'sub-*' | while read dir; do
 done
 
 
+## PL_20_01_2026 : Old version below
 
 find "$TEMP_FOLDER" -type f -regex '.*/R[0-9]+Warped\.nii\.gz' | while read file; do
     python "$crop_script" -i "$croped_template" -r "$file" --inplace 1 > "$LOG_OUTPUT"
@@ -162,4 +163,34 @@ find "$TEMP_FOLDER" -type f -regex '.*/R[0-9]+Warped\.nii\.gz' | while read file
     #python "$crop_script" -i "$croped_Vascular_mask" -r "$file" --inplace 1 > "$LOG_OUTPUT"
 done
 
+:<<EOF
+## PL_20_01_2026 : New version below
+# Sum all obtained Warped to get the union instead of the intersection
+first_image=1
+common_SUM_Warped="$process_dir/croped_template/SUM_Warped.nii.gz"
+find "$TEMP_FOLDER" -type f -regex '.*/R[0-9]+Warped\.nii\.gz' | while read image; do
+    echo "$image"
+    if [ $first_image -eq 1 ]; then
+        cp "$image" "$common_SUM_Warped"
+        first_image=0
+    else
+        fslmaths "$common_SUM_Warped" -add "$image" "$common_SUM_Warped"
+    fi
+done
+
+common_SUM_Warped="$process_dir/croped_template/SUM_Warped.nii.gz"
+python "$crop_script" -i "$croped_template" -r "$common_SUM_Warped" --inplace 1 > "$LOG_OUTPUT"
+
+python "$crop_script" -i "$croped_labels" -r "$common_SUM_Warped" --inplace 1 > "$LOG_OUTPUT"
+fslmaths "$croped_labels" -add 0.2 "$croped_labels" -odt 'int'
+
+python "$crop_script" -i "$croped_mask" -r "$common_SUM_Warped" --inplace 1 > "$LOG_OUTPUT"
+fslmaths "$croped_mask" -add 0.2 "$croped_mask" -odt 'int'
+
+python "$crop_script" -i "$croped_CSFmask" -r "$common_SUM_Warped" --inplace 1 > "$LOG_OUTPUT"
+fslmaths "$croped_CSFmask" -add 0.2 "$croped_CSFmask" -odt 'int'
+
+python "$crop_script" -i "$croped_WMmask" -r "$common_SUM_Warped" --inplace 1 > "$LOG_OUTPUT"
+fslmaths "$croped_WMmask" -add 0.2 "$croped_WMmask" -odt 'int'
+EOF
 rm -rf "$TEMP_FOLDER"

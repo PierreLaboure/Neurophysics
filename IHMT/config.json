@@ -1,0 +1,59 @@
+{
+    "raw_data_dir": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/raw",
+    "process_dir" : "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/process",
+    "subject_info" : "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/subject_info.json",
+
+    "atlas_average_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/HAMBURGERS_TEMPLATE.nii.gz",
+    "atlas_labels_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/hybrid_labels.nii.gz",
+    "ROI_index_list": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/ROI_NeuroImmunoDev.xlsx",
+
+    "pretrained_weights_path": "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt",
+
+
+    "subject_selection": {
+    	"_comment": "mode options : all, list",
+        "mode": "all",  
+        "subjects": [
+            "WT3",
+            "Fire4"
+        ]
+    },
+
+
+    "fetch_data": 0,
+    "reorient_to_standard": 0,
+    "merge_RoCo": 0,
+    "RSS_atlas": 0,
+    "copy_guiding": 0,
+    "RSS_guiding": 0,
+
+    "Registration": {
+        "register": 0,
+        "n_process": 24,
+        "quick" : 1,
+        "verbose": 1
+    },
+    
+    "normalization": {
+        "run": 0,
+        "modalities": {
+            "ihMT": {
+                "metrics": ["ihMTr"]
+            }
+        }
+    },
+
+    "extraction": {
+        "run": 0,
+        "modalities": {
+            "anat": { 
+                "mode": "volume" 
+            },
+            "ihMT": {
+                "mode": "intensity",
+                "metrics": ["ihMTr"],
+                "use_normalized": true
+            }
+        }
+    }
+}

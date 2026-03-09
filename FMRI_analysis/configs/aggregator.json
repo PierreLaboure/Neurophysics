@@ -1,0 +1,182 @@
+{
+
+    "fine" : {
+        "type" : "identity",
+        "reference_labels2roi_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/labels2roi.json"
+    },
+
+    "Macro" : {
+        "regions" : {
+            "VOLT" : ["Vascular organ of lamina terminalis middle"],
+            "MnPO" : ["Median preoptic nucleus middle"],
+            "LPO" : ["Lateral preoptic area left", "Lateral preoptic area right"],
+            "AVPV" : ["Anteroventral periventricular nucleus right", "Anteroventral periventricular nucleus left"],
+            "SCN" : ["Suprachiasmatic nucleus right", "Suprachiasmatic nucleus left"],
+            "MPN" : ["Medial preoptic nucleus left", "Medial preoptic nucleus right"],
+            "PeVN" : ["Periventricular hypothalamic nucleus right", "Periventricular hypothalamic nucleus left"],
+            "SO" : ["Supraoptic nucleus left", "Supraoptic nucleus right"],
+            "PVH" : ["Paraventricular hypothalamic nucleus anterior parvic left", "Paraventricular hypothalamic nucleus anterior parvic right"],
+            "LHA" : ["Lateral hypothalamic area left", "Lateral hypothalamic area right"],
+            "MBs" : ["Mammillary nucleus left", "Mammillary nucleus right"],
+            "PH" : ["Posterior hypothalamic nucleus left", "Posterior hypothalamic nucleus right"],
+            "ARH" : ["Arcuate nucleus left", "Arcuate nucleus right"],
+            "VMH" : ["Ventromedial hypothalamus left", "Ventromedial hypothalamus right"],
+            "DMH" : ["Dorsomedial hypothalamus left", "Dorsomedial hypothalamus right"],
+            "SuM" : ["Supramammillary nucleus middle"],
+            "PMv" : ["Premammillary nucleus ventral left", "Premammillary nucleus ventral right"],
+            "PMd" : ["Premammillary nucleus dorsal left", "Premammillary nucleus dorsal right"],
+            "MPOA" : ["Medial preoptic area left", "Medial preoptic area right"],
+            "VMPO" : ["Ventromedial preoptic nucleus left", "Ventromedial preoptic nucleus right"],
+            "VLPO" : ["Ventrolateral preoptic nucleus left", "Ventrolateral preoptic nucleus right"],
+            "AHA" : [ "Anterior hypothalamic nucleus left",  "Anterior hypothalamic nucleus right"],
+            "LA" : ["Lateral amygdaloid left", "Lateral amygdaloid right"],
+
+            "Nacc" : ["nucleus accumbens right", "nucleus accumbens left"],
+            "SN" : ["Substantia nigra right", "Substantia nigra left"],
+            "VTA" : ["Ventral tegmental area right", "Ventral tegmental area left"],
+
+            "Hippocampus" : [
+                "CA10r left", "CA10r right",
+                "LMol right", "LMol left",
+                "CA1Rad right", "CA1Rad left",
+                "CA2Py right", "CA2Py left",
+                "CA20r right", "CA20r left",
+                "CA2Rad right", "CA2Rad left",
+                "CA3Py Inner right", "CA3Py Inner left",
+                "CA3Py Outer right", "CA3Py Outer left",
+                "CA30r right", "CA30r left",
+                "CA3Rad right", "CA3Rad left",
+                "SLu right", "SLu left",
+                "MoDG right", "MoDG left",
+                "GrDG right", "GrDG left",
+                "PoDG right", "PoDG left",
+                "subiculum right", "subiculum left",
+                "CA1Py right", "CA1Py left"
+            ],
+            
+            "Cortex Cingulate" : [
+                "Cingulate cortex: area 24a right", "Cingulate cortex: area 24a left",
+                "Cingulate cortex: area 24a' right", "Cingulate cortex: area 24a' left",
+                "Cingulate cortex: area 24b right", "Cingulate cortex: area 24b left",
+                "Cingulate cortex: area 24b' right", "Cingulate cortex: area 24b' left",
+                "Cingulate cortex: area 25 right", "Cingulate cortex: area 25 left",
+                "Cingulate cortex: area 29a right", "Cingulate cortex: area 29a left",
+                "Cingulate cortex: area 29b right", "Cingulate cortex: area 29b left",
+                "Cingulate cortex: area 29c right", "Cingulate cortex: area 29c left",
+                "Cingulate cortex: area 30 right", "Cingulate cortex: area 30 left",
+                "Cingulate cortex: area 32 right", "Cingulate cortex: area 32 left"
+            ],
+
+            "Orbital Cortex" : [
+                "Dorsolateral orbital cortex right", "Dorsolateral orbital cortex left",
+                "Lateral orbital cortex right", "Lateral orbital cortex left",
+                "Medial orbital cortex right", "Medial orbital cortex left",
+                "Ventral orbital cortex right", "Ventral orbital cortex left"
+            ],
+
+            "Visual Anterior" : [
+                "Primary visual cortex: monocular area right", "Primary visual cortex: monocular area left",
+                "Secondary visual cortex: mediolateral area right", "Secondary visual cortex: mediolateral area left"
+            ],
+
+            "Secondary Motor Cortex" : [
+                "Secondary motor cortex right", "Secondary motor cortex left"
+            ],
+
+            "Primary Somatosensory DMN" : [
+                "Primary somatosensory cortex: hindlimb region right", "Primary somatosensory cortex: hindlimb region left",
+                "Primary somatosensory cortex: trunk region right", "Primary somatosensory cortex: trunk region left" 
+            ],
+
+            "Dorsal Raphe" : [
+                "periaqueductal grey middle"
+            ],
+
+            "Insular Area" : [
+                "Insular region: not subdivided right", "Insular region: not subdivided left"
+            ],
+
+            "Striatum Salience" : [
+                "striatum right", "striatum left"
+            ],
+
+            "Primary Motor Cortex" : [
+                "Primary motor cortex right", "Primary motor cortex left"
+            ],
+
+            "Primary Somatosensory LCN" : [
+                "Primary somatosensory cortex right", "Primary somatosensory cortex left",
+                "Primary somatosensory cortex: barrel field right", "Primary somatosensory cortex: barrel field left",
+                "Primary somatosensory cortex: dysgranular zone right", "Primary somatosensory cortex: dysgranular zone left",
+                "Primary somatosensory cortex: forelimb region right", "Primary somatosensory cortex: forelimb region left",
+                "Primary somatosensory cortex: hindlimb region right", "Primary somatosensory cortex: hindlimb region left",
+                "Primary somatosensory cortex: jaw region right", "Primary somatosensory cortex: jaw region left",
+                "Primary somatosensory cortex: shoulder region right", "Primary somatosensory cortex: shoulder region left",
+                "Primary somatosensory cortex: trunk region right", "Primary somatosensory cortex: trunk region left",
+                "Primary somatosensory cortex: upper lip region right", "Primary somatosensory cortex: upper lip region left"
+            ],
+
+            "Striatum LCN" : [
+                "striatum right", "striatum left"
+            ],
+
+            "Thalamus" : [
+                "thalamus left", "thalamus right"
+            ]
+        }
+    },
+
+    "Triple Network" : {
+        "regions" : {
+            "Hypothalamic" : [
+                "VOLT", "MnPO", "LPO", "AVPV", "SCN", "MPN", "PeVN",
+                "SO", "PVH", "LHA", "MBs", "PH", "ARH", "VMH", "DMH",
+                "SuM", "PMv", "PMd", "MPOA", "VMPO", "VLPO", "AHA", "LA"
+            ],
+            "Hippocampus" : ["Hippocampus"],
+            "DMN" : [
+                "Cortex Cingulate", "Orbital Cortex", "Visual Anterior", 
+                "Secondary Motor Cortex", "Primary Somatosensory DMN" 
+            ],
+            "Salience" : [
+                "Dorsal Raphe", "Insular Area", "Striatum Salience"
+            ],
+            "LCN" : [
+                "Primary Somatosensory LCN", "Striatum LCN", "Thalamus"
+            ],
+            "Nacc-VTA-SN" : [
+                "Nacc", "SN", "VTA"
+            ]
+        },
+        "source" : "Macro"
+    },
+
+    "Hypothalamus" : {
+        "regions" : {
+            "VOLT" : ["Vascular organ of lamina terminalis middle"],
+            "MnPO" : ["Median preoptic nucleus middle"],
+            "LPO" : ["Lateral preoptic area left", "Lateral preoptic area right"],
+            "AVPV" : ["Anteroventral periventricular nucleus right", "Anteroventral periventricular nucleus left"],
+            "SCN" : ["Suprachiasmatic nucleus right", "Suprachiasmatic nucleus left"],
+            "MPN" : ["Medial preoptic nucleus left", "Medial preoptic nucleus right"],
+            "PeVN" : ["Periventricular hypothalamic nucleus right", "Periventricular hypothalamic nucleus left"],
+            "SO" : ["Supraoptic nucleus left", "Supraoptic nucleus right"],
+            "PVH" : ["Paraventricular hypothalamic nucleus anterior parvic left", "Paraventricular hypothalamic nucleus anterior parvic right"],
+            "LHA" : ["Lateral hypothalamic area left", "Lateral hypothalamic area right"],
+            "MBs" : ["Mammillary nucleus left", "Mammillary nucleus right"],
+            "PH" : ["Posterior hypothalamic nucleus left", "Posterior hypothalamic nucleus right"],
+            "ARH" : ["Arcuate nucleus left", "Arcuate nucleus right"],
+            "VMH" : ["Ventromedial hypothalamus left", "Ventromedial hypothalamus right"],
+            "DMH" : ["Dorsomedial hypothalamus left", "Dorsomedial hypothalamus right"],
+            "SuM" : ["Supramammillary nucleus middle"],
+            "PMv" : ["Premammillary nucleus ventral left", "Premammillary nucleus ventral right"],
+            "PMd" : ["Premammillary nucleus dorsal left", "Premammillary nucleus dorsal right"],
+            "MPOA" : ["Medial preoptic area left", "Medial preoptic area right"],
+            "VMPO" : ["Ventromedial preoptic nucleus left", "Ventromedial preoptic nucleus right"],
+            "VLPO" : ["Ventrolateral preoptic nucleus left", "Ventrolateral preoptic nucleus right"],
+            "AHA" : [ "Anterior hypothalamic nucleus left",  "Anterior hypothalamic nucleus right"],
+            "LA" : ["Lateral amygdaloid left", "Lateral amygdaloid right"]
+        }
+    }
+
+}

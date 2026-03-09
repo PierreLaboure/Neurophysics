@@ -21,3 +21,5 @@ fslorient -setsform $sform $target_image
 fslorient -setqform $qform $target_image
 
 echo "Orientation updated for $target_image to match $source_image."
+
+

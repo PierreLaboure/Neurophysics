@@ -1,9 +1,9 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/CTRL/raw",
-    "process_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/CTRL/Denoised",
-    "IS_crop": 55,
-    "ROI_index_list": "/volatile/home/pl279327/Documents/Neurophysics/T2_pipeline/ROI_all_split.xlsx",
-    "subject_type":"/volatile/home/pl279327/Documents/DATA_THESE/CTRL/subject_type.json"
+    "raw_data_dir": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/raw",
+    "process_data_dir": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/preliminaryProcess",
+    "IS_crop": 0,
+    "ROI_index_list": "/volatile/home/pl279327/Documents/Neurophysics/T2_pipeline/ROI_GM_WM_PMVD.xlsx",
+    "subject_type":"/volatile/home/pl279327/Documents/DATA_THESE/CTRL/subject_type_males.json"	
 }
 
 

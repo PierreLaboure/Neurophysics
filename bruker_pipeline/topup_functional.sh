@@ -95,9 +95,9 @@ topuper () {
     mkdir "$temp_sub_dir"
     find "$func_dir" -maxdepth 1 -type f -exec cp {} "$temp_sub_dir" \;
 
-    bold_data_file=$(find "$func_dir" -type f -name "*_bold.nii.gz" | head -n 1)
-    dim4=$(fslval "$bold_data_file" dim4)
-    dim4_minus1=$((dim4 - 1))
+    #PL_08_01_26 bold_data_file=$(find "$func_dir" -type f -name "*_bold.nii.gz" | head -n 1)
+    #PL_08_01_26 dim4=$(fslval "$bold_data_file" dim4)
+    #PL_08_01_26 dim4_minus1=$((dim4 - 1))
 
     #Fsl operations : 
     #Time average of foward and backward PE
@@ -117,11 +117,15 @@ topuper () {
 
     python "$swell_script" -i "$temp_sub_dir/reversePE.nii.gz" -s $swell_factor
     fslroi "$temp_sub_dir/reversePE_SwellT.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" 0 1
-    fslmerge -t "$temp_sub_dir/reverse2apply.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" $(for i in $(seq 1 $dim4_minus1); do echo "$temp_sub_dir/reversePE_SwellT0.nii.gz"; done)
+    #PL_08_01_26 fslmerge -t "$temp_sub_dir/reverse2apply.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" $(for i in $(seq 1 $dim4_minus1); do echo "$temp_sub_dir/reversePE_SwellT0.nii.gz"; done)
 
 
     find "$temp_sub_dir" -type f -name '*bold.nii.gz' | while read bold_file; do
         bold_file_name=$(basename "$bold_file")
+        #PL_08_01_26
+        dim4=$(fslval "$bold_file" dim4)
+        dim4_minus1=$((dim4 - 1))
+        fslmerge -t "$temp_sub_dir/reverse2apply.nii.gz" "$temp_sub_dir/reversePE_SwellT0.nii.gz" $(for i in $(seq 1 $dim4_minus1); do echo "$temp_sub_dir/reversePE_SwellT0.nii.gz"; done)
         log "Applying topup correction on $bold_file_name for subject $dirname"
 
         python "$swell_script" -i "$bold_file" -s $swell_factor
@@ -142,6 +146,7 @@ topuper () {
 
 
 find "$bids_dir" -type d -name 'sub-*' | while read dir; do
+    echo "$dir"
     has_ses_dirs=false
     # Look for ses-* subdirectories inside sub-*
     for ses_dir in "$dir"/ses-*; do

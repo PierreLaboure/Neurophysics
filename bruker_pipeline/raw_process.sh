@@ -75,6 +75,14 @@ task_index=$(head -1 "$filePath" | awk -F, '{for (i=1; i<=NF; i++) if ($i == "ta
 
 ####################################################################################################################################################
 ###process bids_helper
+/usr/bin/awk -F, -v OFS=, -v type_idx="$type_index" '
+{
+    for (i=1; i<=NF; i++) {
+        if ($i == "etc") $i = "anat"
+    }
+}
+(FNR==1 || $6=="func" || $(type_idx)=="anat") { print }
+' "$filePath"|\
 #Keep only scans which are anat or func in the DataType colunm
 /usr/bin/awk -F, -v type_idx="$type_index" '(FNR==1||$6=="func"||$(type_idx)=="anat") {print}' "$filePath" |\
 #Remove content of colunm 3

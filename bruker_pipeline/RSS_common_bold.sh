@@ -75,24 +75,23 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate rss
 
 # create RSS/input and RSS/masks
-TEMP_FOLDER=$(mktemp -d)
-mkdir -p "$TEMP_FOLDER/input" "$TEMP_FOLDER/masks"
-
+RSS_DIR="$input_data_dir/RSS"
+mkdir -p "$RSS_DIR" "$RSS_DIR/input" "$RSS_DIR/masks"
 
 # extract all commonspace bold (at least some repetitions, not necessarily the 400)
 # cp them to RSS/input
 find "$input_data_dir/preprocess/bold_datasink/commonspace_bold" -type f -name '*nii.gz' | while read file; do
     filename=$(basename "$file")
     name="${filename%%".nii.gz"}"
-    cp "$file" "$TEMP_FOLDER/input/${name}_0000.nii.gz"
+    cp "$file" "$RSS_DIR/input/${name}_0000.nii.gz"
 done
-RS2_predict -i "$TEMP_FOLDER/input" -o "$TEMP_FOLDER/masks" -m "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt" -device "cpu" > "$LOG_OUTPUT"
+RS2_predict -i "$RSS_DIR/input" -o "$RSS_DIR/masks" -m "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt" -device "cpu" > "$LOG_OUTPUT"
 
 
 # multiply all masks output
-temp_file="$TEMP_FOLDER/masks/temp_multiplied_image.nii.gz"
+temp_file="$RSS_DIR/masks/temp_multiplied_image.nii.gz"
 first_image=1
-find "$TEMP_FOLDER/masks" -type f -name "*.nii.gz" | while read image; do
+find "$RSS_DIR/masks" -type f -name "*.nii.gz" | while read image; do
     if [ $first_image -eq 1 ]; then
         cp "$image" "$temp_file"
         first_image=0
@@ -108,5 +107,5 @@ fslmaths "$temp_file" -mul "$commonspace_mask" "$temp_file"
 mkdir -p "$input_data_dir/masks"
 cp "$temp_file" "$input_data_dir/masks/melodic_mask.nii.gz"
 
-
-#rm -rf "$TEMP_FOLDER"
+rm -rf "$RSS_DIR/input"
+#rm -rf "$RSS_DIR"

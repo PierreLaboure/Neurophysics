@@ -85,12 +85,8 @@ find "$raw_data_dir" -mindepth 1 -maxdepth 1 | while read dir; do
         X="6698"
     fi
 
-    anat=$(find "$process_dir/bids" -type f -name "*$X*" -name "*rs$Y*" -name "*T2w.nii.gz")
-
+    anat=$(find "$process_dir/bids" -type f -name "*$X*" -name "*$Y*" -name "*T2w.nii.gz")
     rm -f "$dirname/T2map.nii.gz"
-    3dWarp -oblique2card -prefix "$dirname/T2map.nii.gz" "$file" > "$LOG_OUTPUT"
-    fslswapdim "$dirname/T2map.nii.gz" -x -z -y "$dirname/T2map.nii.gz"
-    fslorient -forceradiological "$dirname/T2map.nii.gz"
+    fslreorient2std "$file" "$dirname/T2map.nii.gz"
     fslroi "$dirname/T2map.nii.gz" "$dirname/T2map.nii.gz" 0 -1 0 -1 $IS_crop -1
-    bash reorient_anat.sh "$anat" "$dirname/T2map.nii.gz" 0
 done

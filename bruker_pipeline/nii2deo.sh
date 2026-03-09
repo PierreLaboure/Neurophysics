@@ -104,7 +104,12 @@ for subject_dir in "$bids_dir"/sub*/; do
             deo_name="$bold_file"
             3dTshift -prefix "$func_dir/temp.nii.gz" -tpattern altminus "$file" > "$LOG_OUTPUT"
             rm "$file"
-            3dWarp -oblique2card -prefix "$deo_name" "$func_dir/temp.nii.gz" > "$LOG_OUTPUT"
+
+            #PL_2026_02_04
+            fslreorient2std "$func_dir/temp.nii.gz" "$deo_name"
+            
+            #mv "$func_dir/temp.nii.gz" "$deo_name"
+            #3dWarp -oblique2card -prefix "$deo_name" "$func_dir/temp.nii.gz" > "$LOG_OUTPUT"
 
 		rm "$func_dir/temp.nii.gz"
         done
@@ -123,9 +128,13 @@ for subject_dir in "$bids_dir"/sub*/; do
             log "found file : $file"
             T2w_file=$(insert_T2w "$file")
             deo_name="$T2w_file"
-            3dWarp -oblique2card -prefix "$anat_dir/temp.nii.gz" "$file" > "$LOG_OUTPUT"
-            rm "$file"
-            mv "$anat_dir/temp.nii.gz" "$deo_name"
+
+            #PL_2026_02_04
+            fslreorient2std "$file" "$deo_name"
+
+            #3dWarp -oblique2card -prefix "$anat_dir/temp.nii.gz" "$file" > "$LOG_OUTPUT"
+            #rm "$file"
+            #mv "$anat_dir/temp.nii.gz" "$deo_name"
         done
     else
 	    echo "Directory $anat_dir does not exist"

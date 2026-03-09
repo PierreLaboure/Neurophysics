@@ -1,8 +1,8 @@
 {
-    "raw_data_dir": "/volatile/home/pl279327/Documents/DATA_THESE/iBot/raw",
+    "raw_data_dir": "/volatile/home/pl279327/Documents/Neuroparrots/raw",
   
     "raw2bids": {
-    	"convert": 0,
+    	"convert": 1,
     	"verbose": 1
     },
     "nifti2deoblique": {
@@ -14,7 +14,7 @@
     "topup": {
     	"correct": 0,
     	"acqparams_path": "acqparams.txt",
-    	"swell_factor" : 10,
+    	"swell_factor" : 5,
     	"verbose": 1
     },
     "backup_sum_anat": {
@@ -23,15 +23,15 @@
     },
     "crop_anat": {
     	"crop": 0,
-    	"IS_crop": 53,
+    	"IS_crop": 62,
     	"verbose": 1
     },
     "crop_atlas": {
     	"crop": 0,
-    	"template2crop_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_average.nii.gz",
-    	"labels2copy_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/fullAtlas_SN_VTA.nii.gz",
+    	"template2crop_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/HAMBURGERS_TEMPLATE.nii.gz",
+    	"labels2copy_path": "/volatile/home/pl279327/Documents/ATLAS/atlas_data/labels_HAMBURGERS.nii.gz",
     	"mask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_mask.nii.gz",
-    	"CSFmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_CSF_mask.nii.gz",
+    	"CSFmask2crop_path":"/volatile/home/pl279327/Documents/DATA_THESE/DIAGNOSIS/csf_mask_dil2.nii.gz",
     	"WMmask2crop_path":"/volatile/home/pl279327/Documents/ATLAS/atlas_data/DSURQE_40micron_eroded_WM_mask.nii.gz",
     	"verbose": 1
     },
@@ -59,7 +59,7 @@
     	"verbose": 1
     },
     "melodic": {
-	"do": 1,
+	"do": 0,
 	"make_list_only" : 1,
 	"specify_dimension": 1,
 	"dimension": 25,

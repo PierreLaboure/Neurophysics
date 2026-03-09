@@ -27,8 +27,8 @@ RSS_SSed_atlas_path="$atlas_parent_path/SSed/SSed_atlas.nii.gz"
 
 if [[ $(jq -r .RSS_atlas config.json) == 1 ]]; then
     #gzip and crop atlas to RSS input and RSS and rename output
-    gzip -c $atlas_average and the abyss with the i_path > $RSS_input_atlas_path
-    fslroi RSS_input_atlas_path RSS_input_atlas_path 0 -1 43 -1 0 -1
+    gzip -c $atlas_average_path > $RSS_input_atlas_path
+    fslroi "$RSS_input_atlas_path" "$RSS_input_atlas_path" 0 -1 43 -1 0 -1
     RS2_predict -i "$atlas_parent_path/input" -o "$atlas_parent_path/masks" -m $(jq -r .pretrained_weights_path config.json) -device "cpu"
     mv "$RSS_masks_atlas_dir/atlas_0000.nii.gz" "$RSS_masks_atlas_dir/atlas_mask.nii.gz"
 
@@ -96,6 +96,7 @@ if [[ $(jq -r .Copy_RDI_Anat.Copy_anat config.json) == 1 ]]; then
         subject_name=$(basename "$subdir")
 
         # Define the output path for the copied file
+        #RSS_subject_anat_path="$RSS_input_path/${subject_name}_anat_0000.nii.gz"
         RSS_subject_anat_path="$RSS_input_path/${subject_name}_anat_0000.nii"
         
         # Copy the file and gzip it
@@ -119,10 +120,22 @@ if [[ $(jq -r .Reorient_anat.Reorient config.json) == 1 ]]; then
             if [[ " ${subjects_list[@]} " =~ " ${subject_name} " ]]; then
                 # Build and run the command
                 echo "reorientation of subject $subject_name anat scan"
-                "$reorient_script" "$atlas_average_path" "$file" "$invert_dim"
+                bash "$reorient_script" "$atlas_average_path" "$file" "$invert_dim"
             fi
         fi
     done
+fi
+
+#Reorient rdi images
+if [[ $(jq -r .Reorient_atlas2rdi.Reorient config.json) == 1 ]]; then
+    reorient_script="$(pwd)/reorient_rdi.sh"
+    invert_dim=$(jq -r .Reorient_atlas2rdi.Invert_dim config.json)
+
+    rdi_file=$(find "$RSS_input_path" -type f -name "*_rdi_0000.nii.gz" | head -n 1)
+    rdi_atlas_path="$atlas_parent_path/SSed/rdi_atlas.nii.gz"
+    cp "$RSS_SSed_atlas_path" "$rdi_atlas_path"
+    echo "reorientation of atlas to rdi scans"
+    bash "$reorient_script" "$rdi_file" "$rdi_atlas_path" "$invert_dim"
 fi
 
 #Skull strip images

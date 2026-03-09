@@ -1,22 +1,20 @@
 {
-    "cohort_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/Gonadano-diff/ibot_fem_apres",
+    "cohort_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/norm_data/Fire",
     "Process_Specific_Subjects" : {
-    	"Process_Specific_Subjects" : 1,
+    	"Process_Specific_Subjects" : 0,
     	"Subjects_List" : [
     		"AN2100"
     	]
     },
-    "rss_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia//pipeline/RSS_gonadano",
-    "database_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/Database_gonadano",
-    "ants_transforms_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/Transforms_gonadano",
-    "atlas_average_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/DSURQE_40micron_average.nii",
-    "atlas_labels_path": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/fullAtlas_SN_VTA.nii.gz",
-    "ROI_index_list": "/volatile/home/pl279327/Documents/DIFFUSION_Alicia/pipeline/atlas/ROI_Alicia.xlsx",
+    "rss_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/RSS",
+    "database_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/database",
+    "ants_transforms_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/transforms",
+    "atlas_average_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/HAMBURGERS_TEMPLATE.nii",
+    "atlas_labels_path": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/hybrid_labels.nii.gz",
+    "ROI_index_list": "/volatile/home/pl279327/Documents/NeuroImmunoDev/IHMT/handProcess/atlas/ROI_NeuroImmunoDev.xlsx",
     "pretrained_weights_path": "/volatile/home/pl279327/Documents/brain_extraction/Rodent-Skull-Stripping/RS2_pretrained_model.pt",
     "diffusion_metrics_list": [
-        "dti_fa",
-        "md",
-        "rd"
+    	"norm_ihMT"
     ],
     "voxel_volume": 6.399999999999998e-05,
     "RSS_atlas": 0,
@@ -26,17 +24,21 @@
     },
     "Reorient_anat": {
         "Reorient": 0,
+        "Invert_dim": 1
+    },
+    "Reorient_atlas2rdi": {
+        "Reorient": 0,
         "Invert_dim": 0
     },
     "RSS_RDI_anat": 0,
     "Register_atlas_2_RDI": {
         "Register": 0,
-        "Quick": 0,
+        "Quick": 1,
         "n_process": 24
     },
     "Register_atlas_2_anat": {
         "Register": 0,
-        "Quick": 0,
+        "Quick": 1,
         "n_process": 24
     },
     "Transform_atlas_2_anat": {
@@ -49,12 +51,12 @@
     },
     "Extract_metrics": {
     	"Extract" : 0,
-    	"database_prefix": "DB2",
+    	"database_prefix": "DB1_norm_jan_2026",
     	"verbose" : 1
     },
     "Merge_db":{
     	"Merge" : 1,
-    	"database_prefix" : "DB2",
-    	"Merged_prefix" : "Gonadano2"
+    	"database_prefix" : "DB1_norm_jan_2026",
+    	"Merged_prefix" : "DB1_norm_jan_2026"
     }
 }

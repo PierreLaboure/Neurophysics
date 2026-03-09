@@ -21,10 +21,10 @@ def merge_df():
     merged_db_path = os.path.join(database_path, merged_prefix + '.csv')
 
     db_list = []
-
     for path, dirs, files in os.walk(database_path):
         for file in files:
-            if database_prefix in file:
+            if database_prefix in file and path!=database_path:
+                print(path, file)
                 cohort_name = path.split('/')[-1]
                 df = pd.read_csv(os.path.join(path, file))
                 df['cohort'] = cohort_name
@@ -32,7 +32,7 @@ def merge_df():
 
     stacked_df = pd.concat(db_list, ignore_index=True)
 
-    stacked_df.to_csv(merged_db_path)
+    stacked_df.to_csv(merged_db_path, index = False)
 
 
 if __name__=="__main__":

@@ -55,8 +55,11 @@ def extract_metrics():
     for ROI_name in ROI_df['hierarchy']:
         ROI_labels_right = list(ROI_df[ROI_df['hierarchy']==ROI_name]['right label'])
         ROI_labels_left = list(ROI_df[ROI_df['hierarchy']==ROI_name]['left label'])
-        ROI_labels_dict[ROI_name + '_right'] = ROI_labels_right
-        ROI_labels_dict[ROI_name + '_left'] = ROI_labels_left
+        if ROI_labels_left==ROI_labels_right:
+            ROI_labels_dict[ROI_name + '_middle'] = ROI_labels_right
+        else:
+            ROI_labels_dict[ROI_name + '_right'] = ROI_labels_right
+            ROI_labels_dict[ROI_name + '_left'] = ROI_labels_left
 
 
 

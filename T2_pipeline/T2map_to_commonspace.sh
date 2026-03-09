@@ -85,12 +85,10 @@ find "$raw_data_dir" -type f -name '*T2map.nii.gz' | while read file; do
         X="6698"
     fi
 
-    native2unbiased_affine=$(find "$transforms_datasink/native_to_unbiased_affine" -type f -name "*$X*" -name "*rs$Y*")
-    native2unbiased_warp=$(find "$transforms_datasink/native_to_unbiased_warp" -type f -name "*$X*" -name "*rs$Y*")
-
+    native2unbiased_affine=$(find "$transforms_datasink/native_to_unbiased_affine" -type f -name "*$X*" -name "*$Y*")
+    native2unbiased_warp=$(find "$transforms_datasink/native_to_unbiased_warp" -type f -name "*$X*" -name "*$Y*")
 
     #anat 2 unbiased transforms
-
     antsApplyTransforms -d 3 -i "$file" -r "$unbiased" -o "$process_data_dir/commonspace_T2map/${X}_${Y}_commonspace_anat.nii.gz" -t "$native2unbiased_affine" > "$LOG_OUTPUT"
     if [[ -n "$native2unbiased_warp" ]]; then
         antsApplyTransforms -d 3 -i "$process_data_dir/commonspace_T2map/${X}_${Y}_commonspace_anat.nii.gz" -r "$unbiased" -o "$process_data_dir/commonspace_T2map/${X}_${Y}_commonspace_anat.nii.gz" -t "$native2unbiased_warp" > "$LOG_OUTPUT"
